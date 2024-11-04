@@ -1,0 +1,259 @@
+---
+title: "Travelers Data Competition"
+authors: 
+  Maksuda Aktar Toma,
+  Aarif Baksh
+date: today
+date-format: long
+abstract: |
+  If we want an abstract it will go here.  References are in the form @placeHolder or [@placeHolder].  
+execute: 
+  echo: false
+  warning: false
+columns: 2
+format:
+  pdf: 
+    extensions-dir: quarto-wordcount/_extensions/wordcount
+    fig-align: center
+    fig-width: 6
+    fig-height: 4
+
+editor: 
+  markdown: 
+    wrap: sentence
+---
+To explore all the files for this project got to the GitHub page  [here](https://github.com/maksudatoma/2024-Travelers-University-Modeling-Competition)
+
+
+```{r, , fig.pos="H"}
+#| label: data-setup
+#| echo: false
+#| eval: true
+data <- read.csv("test_data.csv")
+data1 <- read.csv("train_data.csv")
+```
+
+
+```{r, , fig.pos="H"}
+#| label: fig-abbrevstats
+#| echo: false
+#| eval: true
+
+
+# 1. Distribution of Annual Premium Amounts
+library(ggplot2)
+ggplot(train_data, aes(x = ann_prm_amt)) +
+  geom_histogram(bins = 30, fill = "blue", alpha = 0.7) +
+  labs(title = "Distribution of Annual Premium Amounts", x = "Annual Premium Amount", y = "Count")
+
+# 2. Counts of Acquisition Methods
+ggplot(train_data, aes(x = acq_method)) +
+  geom_bar(fill = "green", alpha = 0.7) +
+  labs(title = "Counts of Acquisition Methods", x = "Acquisition Method", y = "Count")
+
+# 3. Distribution of Home Lot Square Footage
+ggplot(train_data, aes(x = home_lot_sq_footage)) +
+  geom_histogram(bins = 30, fill = "purple", alpha = 0.7) +
+  labs(title = "Distribution of Home Lot Square Footage", x = "Home Lot Square Footage", y = "Count")
+
+# 4. Policy Tenure Distribution
+ggplot(train_data, aes(x = tenure_at_snapshot)) +
+  geom_histogram(bins = 30, fill = "orange", alpha = 0.7) +
+  labs(title = "Distribution of Policy Tenure", x = "Tenure (Months)", y = "Count")
+
+```
+
+##Matrix
+![Fig](Correlation_Matrix.png)
+
+```{r}
+# Load necessary libraries
+library(data.table)
+
+# Load the training dataset
+train_data <- fread("train_data.csv")
+
+# 1. Basic Summary Information
+# Number of variables and samples
+num_variables <- ncol(train_data)
+num_samples <- nrow(train_data)
+
+# 2. Variable Types
+# Identify numeric, categorical, and other variable types
+variable_types <- sapply(train_data, class)
+num_numeric_vars <- sum(variable_types %in% c("integer", "numeric"))
+num_categorical_vars <- sum(variable_types == "character")
+
+# 3. Summary of the Response Variable (target variable)
+# We assume "call_counts" is the target variable
+target_var <- "call_counts"
+target_info <- list(
+  variable_name = target_var,
+  class = class(train_data[[target_var]]),
+  unique_values = length(unique(train_data[[target_var]])),
+  range = range(train_data[[target_var]], na.rm = TRUE)
+)
+
+# Determine the suitable model: GLM for count data
+is_count_data <- is.integer(train_data[[target_var]]) && min(train_data[[target_var]]) >= 0
+
+# 4. Missing Observations
+# Count missing values for each variable
+missing_values <- sapply(train_data, function(x) sum(is.na(x)))
+missing_summary <- data.frame(variable = names(missing_values), missing_count = missing_values)
+
+# Count samples left after listwise deletion
+listwise_deleted <- sum(complete.cases(train_data))
+
+# Display the results
+cat("Exploratory Data Analysis Summary:\n")
+cat("Number of Variables:", num_variables, "\n")
+cat("Number of Samples:", num_samples, "\n")
+cat("Number of Numeric Variables:", num_numeric_vars, "\n")
+cat("Number of Categorical Variables:", num_categorical_vars, "\n\n")
+
+cat("Response Variable Analysis:\n")
+cat("Variable Name:", target_info$variable_name, "\n")
+cat("Type:", target_info$class, "\n")
+cat("Unique Values:", target_info$unique_values, "\n")
+cat("Range:", paste(target_info$range, collapse = " to "), "\n")
+cat("Is Count Data:", ifelse(is_count_data, "Yes", "No"), "\n\n")
+
+cat("Missing Observations by Variable:\n")
+print(missing_summary)
+
+cat("\nSamples Remaining After Listwise Deletion:", listwise_deleted, "\n")
+
+```
+
+
+
+##EDA
+```{r}
+hist(train_data$ann_prm_amt)
+boxplot(train_data$ann_prm_amt)
+hist(train_data$call_counts)
+plot(train_data$ann_prm_amt, train_data$call_counts)
+boxplot(train_data$home_lot_sq_footage)
+
+
+``
+`
+```{r}
+library(GGally)
+
+# Assuming `numeric_vars` contains the names of numeric columns
+ggpairs(train_data[, ..numeric_vars])
+
+
+```
+
+##Lightgbm Model
+
+```{r}
+# Load necessary libraries
+library(data.table)
+library(lightgbm)
+
+# Load the training dataset
+train_data <- fread("train_data.csv")
+
+# Define target and features
+y <- train_data$call_counts
+X <- train_data[, !"call_counts"]
+
+# Define categorical features and ensure they are factors
+categorical_features <- c("acq_method", "bi_limit_group", "channel", "geo_group",
+                          "household_group", "pay_type_code", "prdct_sbtyp_grp", "product_sbtyp")
+
+# Convert categorical features to factors
+X[, (categorical_features) := lapply(.SD, as.factor), .SDcols = categorical_features]
+
+# Handle any remaining missing values by filling with the median (or another suitable method)
+numeric_cols <- setdiff(names(X), categorical_features)
+X[, (numeric_cols) := lapply(.SD, function(x) ifelse(is.na(x), median(x, na.rm = TRUE), x)), .SDcols = numeric_cols]
+
+# Convert to a matrix
+train_matrix <- as.matrix(X)
+
+# Create LightGBM dataset
+train_dataset <- lgb.Dataset(data = train_matrix, label = y, categorical_feature = categorical_features)
+
+# Define parameters
+params <- list(
+    objective = "poisson",
+    metric = "rmse",
+    learning_rate = 0.1,
+    num_leaves = 31
+)
+
+# Train model
+model <- lgb.train(params = params, data = train_dataset, nrounds = 100)
+
+# Predictions
+preds <- predict(model, train_matrix)
+rmse <- sqrt(mean((y - preds)^2))
+cat("Root Mean Squared Error:", rmse)
+
+
+```
+
+##Matrix
+```{r}
+# Load necessary libraries
+library(GGally)
+library(data.table)
+
+# Load the training dataset
+train_data <- fread("train_data.csv")
+
+# Select only the numeric variables for correlation matrix plot
+numeric_vars <- train_data[, sapply(.SD, is.numeric), .SDcols = names(train_data)]
+numeric_data <- train_data[, ..numeric_vars]
+
+# Create the matrix plot
+ggpairs(numeric_data, 
+        upper = list(continuous = "cor"),
+        lower = list(continuous = "smooth"),
+        diag = list(continuous = "densityDiag")
+        )
+
+```
+
+```{r}
+
+```
+
+
+
+
+\newpage
+
+# References
+
+::: {#refs}
+:::
+
+\newpage
+
+# Appendix A - R Code
+
+```{r, , fig.pos="H"}
+#| label: appendix A
+#| echo: true
+#| eval: false
+
+## Prints code without running it
+
+library(knitr)
+data <- read.csv("data.csv")
+knitr::kable(head(data), format = 'markdown')
+
+
+
+
+
+
+```
+
+
