@@ -1,16 +1,7 @@
 setwd("C:\\Users\\aarif\\OneDrive\\Desktop\\PhD Statistics\\STAT 823\\Project")
-
-
-
-#Models to consider - Random Forest - Poisson and glm (regularization), gbm, PCA and clustering?
-install.packages("corrplot")
-library(corrplot)
 install.packages("caret")
 library(caret)
-install.packages("randomForest")
-library(randomForest)
 library(dplyr)
-
 
 trav <- read.csv("train_data.csv")
 summary(trav)
@@ -22,40 +13,11 @@ trav <- trav %>%
 
 View(trav)
 
-
-#Missing Values Option 1 - Removing all - issue: channel other will have no values
-trav[trav == -2 |trav == -20 | trav == "missing"] <- NA
-trav1 <- na.omit(trav)
-
-1-nrow(trav1)/nrow(trav) #78% of the data is missing!
-
-summary(trav1$prdct_sbtyp_grp)
-
-trav1$acq_method <- factor(trav1$acq_method, levels = setdiff(levels(trav1$acq_method), "missing"))
-trav1$bi_limit_group <- factor(trav1$bi_limit_group, levels = setdiff(levels(trav1$bi_limit_group), "NonAuto"))
-
-
-
-
-#Multicollinearity between these three categories
-table(trav1$household_group,trav1$prdct_sbtyp_grp)
-table(trav1$prdct_sbtyp_grp,trav1$product_sbtyp)
-table(trav1$household_group, trav1$product_sbtyp)
-
-
-crossproduct <- factor(paste(trav$household_group, trav$p, trav$prdct_sbtyp_grp, sep = "_"))
-
-summary(crossproduct)
-
-
-
-
-trav1 <- trav
 #creating Train and Test Sets
 
-trainIndex <- createDataPartition(trav1$call_counts, p = 0.8, list = FALSE)
-train_data <- trav1[trainIndex, ]
-test_data <- trav1[-trainIndex, ]
+trainIndex <- createDataPartition(trav$call_counts, p = 0.8, list = FALSE)
+train_data <- trav[trainIndex, ]
+test_data <- trav[-trainIndex, ]
 
 
 #Checking whether stratification was successful
@@ -63,110 +25,69 @@ mean(train_data$call_counts)
 mean(test_data$call_counts)
 
 
-#Method 1-glm
-glm_poisson <- train(call_counts ~.-channel-trm_len_mo-household_group-product_sbtyp, data = train_data,
-                     method = "glm",
-                     family = "poisson",
-                     trControl = trainControl(method = "repeatedcv", number = 5, repeats = 3),
-                     metric = "RMSE")
-
-summary(glm_poisson)
-
-print(glm_poisson)
-
-prds1 <- predict(glm_poisson, newdata = test_data)
-
-# Evaluate model performance using RMSE
-rmse <- sqrt(mean((prds1 - test_data$call_counts)^2))
-rmse
-pred1 <- data.frame(test_data$call_counts, data.frame(prds1))
-print(pred1)
 
 
-
-#Method 2 - ZIP (Need to return to this)
+#ZIP Model
 install.packages("pscl")
 library(pscl)
+train_data$household_group
 
-# Zero-Inflated Poisson model
-zip_model <- zeroinfl(call_counts~X12m_call_history+acq_method+bi_limit_group+digital_contact_ind+geo_group+has_prior_carrier,
-                      data = train_data, dist = "poisson")
-
-summary(zip_model)
+zip_model <- zeroinfl(call_counts ~ X12m_call_history + acq_method + newest_veh_age+ann_prm_amt+household_group | household_policy_counts + digital_contact_ind + tenure_at_snapshot+trm_len_mo,
+                      data = train_data, dist = "negbin")
 
 
-train_data$home_lot_sq_footage
+zip_model$coefficients
 
-summary(zip_model)
-
-
-# For comparison, you could try Negative Binomial
-negbin_model <- glm.nb(call_counts ~ ., data = train_data)
-
-# Predict using the Zero-Inflated Poisson model
-zip_predictions <- predict(zip_model, newdata = test_data, type = "response")
-
-# Predict using the Negative Binomial model
-nb_predictions <- predict(negbin_model, newdata = test_data, type = "response")
+zip_pred <- predict(zip_model, newdata = test_data, type = "response")
+rmse6 <- sqrt(mean((zip_pred - test_data$call_counts)^2))
+rmse6
+pred6 <- data.frame(test_data$call_counts, data.frame(zip_pred))
+print(pred6)
 
 
 
 
 
-#Method 3 - Regularized GLM
-install.packages("glmnet")
-library(glmnet)
 
-# Regularized Poisson model using caret with glmnet
-set.seed(123)  # For reproducibility
-glmnet_poisson <- train(
-  call_counts ~ . - channel - trm_len_mo - household_group - product_sbtyp,
-  data = train_data,
-  method = "glmnet",
-  family = "poisson",
-  trControl = trainControl(method = "repeatedcv", number = 5, repeats = 3),
-  tuneGrid = expand.grid(
-    alpha = c(0, 0.5, 1),  # 0 = Ridge, 1 = Lasso, and values between 0 and 1 for Elastic Net
-    lambda = seq(0.01, 0.1, length = 10)  # Grid of regularization parameters
-  ),
-  metric = "RMSE"
-)
+#Random Forest Model
 
-coef(glmnet_poisson$finalModel, s = glmnet_poisson$bestTune$lambda)
-
-
-prds2 <- predict(glmnet_poisson, newdata = test_data)
-
-# Evaluate model performance using RMSE
-rmse2 <- sqrt(mean((prds2 - test_data$call_counts)^2))
-rmse2
-pred2 <- data.frame(test_data$call_counts, data.frame(prds2))
-print(pred2)
-
-
-
-
-#Method4 - Random forest
 library(randomForest)
 
 rf.poisson <- randomForest(call_counts ~ ., data = train_data, importance = T, ntree = 50, mtry = 4, nodesize=20, maxnodes=NULL)
 
-prds4 <- predict(rf.poisson, newdata = test_data)
+rf.poissonpred <- predict(rf.poisson, newdata = test_data, type = "response")
 
 # Evaluate model performance using RMSE
-rmse4 <- sqrt(mean((prds4 - test_data$call_counts)^2))
-rmse4
-pred4 <- data.frame(test_data$call_counts, data.frame(prds4))
-print(pred4)
+rmse7 <- sqrt(mean((rf.poissonpred - test_data$call_counts)^2))
+rmse7
+
+pred7 <- data.frame(test_data$call_counts, data.frame(rf.poissonpred))
+print(pred7)
+
+
+#Random Forest with train function
+
+set.seed(161)
+rf.cv1 <-train(call_counts~., data = train_data, method="rf",
+               trControl=trainControl(method = "repeatedcv", number = 5, repeats = 3),
+               metric="RMSE",tuneGrid=expand.grid(mtry=c(1:4)), ntree=100)
 
 
 
+#GBM Model
+library(gbm)
+gbm.poisson <- gbm(call_counts ~ ., data = train_data, distribution="poisson", n.tree = 500, interaction.depth=7, shrinkage=0.01,n.minobsinnode=20,bag.fraction=1)
 
+gbm.poissonpred <- predict(gbm.poisson, newdata = test_data, type = "response")
+# Evaluate model performance using RMSE
+rmse8 <- sqrt(mean((gbm.poissonpred - test_data$call_counts)^2))
+rmse8
 
+pred8 <- data.frame(test_data$call_counts, data.frame(gbm.poissonpred))
+print(pred8)
 
 
 #Predicting on the Test Set
-
 travtst <- read.csv("test_data.csv")
 
 summary(travtst)
@@ -177,57 +98,182 @@ travtst2 <- travtst[,-1]
 travtst2 <- travtst2 %>%
   mutate(across(where(is.character), as.factor))
 
-View(travtst2)
 
+gbm.poissonpred <- predict(gbm.poisson, newdata = travtst2, type = "response")
 
-#Missing Values Option 1 - Removing all - issue: channel other will have no values
-travtst[travtst == -2 |travtst == -20 | travtst == "missing"] <- NA
-travtst <- na.omit(travtst)
+subfile <- data.frame(travtst$id,gbm.poissonpred)
 
-trav
-
-1-nrow(travtst)/nrow(travtst) #0% of the data is missing!
-
-summary(trav1$prdct_sbtyp_grp)
-
-travtst$acq_method <- factor(travtst$acq_method, levels = setdiff(levels(travtst$acq_method), "missing"))
-travtst$bi_limit_group <- factor(travtst$bi_limit_group, levels = setdiff(levels(travtst$bi_limit_group), "NonAuto"))
-
-
-
-prds5 <- predict(rf.poisson, newdata = travtst2)
-
-prds5 <- data.frame(prds5)
-
-
-
-
-subfile <- data.frame(travtst$id,prds5)
+write.csv(subfile, file = "C:\\Users\\aarif\\OneDrive\\Desktop\\2024-Travelers-University-Modeling-Competition\\DataTest3.csv", row.names=TRUE)
 
 
 
 
 
-write.csv(subfile, file = "C:\\Users\\aarif\\OneDrive\\Desktop\\MSc. Act Sci\\Spring 2024\\STAT 885\\Assignments\\Final Project\\DataTest.csv", row.names=TRUE)
+#GBM Model with train function
+gbm.cv1 <- train(call_counts ~ ., data = train_data, method="gbm",
+                 trControl = trainControl(method = "repeatedcv", number = 5, repeats = 3), metric="RMSE",
+                 tuneGrid=expand.grid(n.trees=seq(100,500,100), interaction.depth=5,shrinkage=seq(0.01,0.10,0.01),
+                                      n.minobsinnode=100), bag.fraction=1, verbose=F, distribution="poisson")
+
+
+gbm.cv1pred <- predict(gbm.cv1, newdata = test_data, type = "raw")
+# Evaluate model performance using RMSE
+rmse9 <- sqrt(mean((gbm.cv1pred - test_data$call_counts)^2))
+rmse9
 
 
 
 
 
+#Try Imputation
+install.packages("mice")
+library(mice)
+
+trav3 <- read.csv("train_data.csv")
+summary(trav3)
+#Exclude first column (ID column)
+trav3 <- trav3[,-1]
+
+trav3 <- trav3 %>%
+  mutate(across(where(is.character), as.factor))
+
+trav3[trav3 == -2 |trav3 == -20 | trav3 == "missing"] <- NA
+
+
+trav3 = complete(mice(trav3, method = "pmm"))
+
+summary(trav3)
+
+trav3$acq_method <- factor(trav3$acq_method, levels = setdiff(levels(trav3$acq_method), "missing"))
 
 
 
+#creating Train and Test Sets
+
+trainIndex <- createDataPartition(trav3$call_counts, p = 0.7, list = FALSE)
+train_data2 <- trav3[trainIndex, ]
+test_data2 <- trav3[-trainIndex, ]
 
 
+#Checking whether stratification was successful
+mean(train_data2$call_counts)
+mean(test_data2$call_counts)
 
 
+#Random Forest Model
 
+library(randomForest)
+
+rf.poisson <- randomForest(call_counts ~ ., data = train_data2, importance = T, ntree = 50, mtry = 4, nodesize=20, maxnodes=NULL)
+rf.poissonpred <- predict(rf.poisson, newdata = test_data2, type = "response")
 
 # Evaluate model performance using RMSE
-rmse3 <- sqrt(mean((prds3 - test_data$call_counts)^2))
-rmse3
-pred3 <- data.frame(test_data$call_counts, data.frame(prds3))
-print(pred3)
+rmse9 <- sqrt(mean((rf.poissonpred - test_data2$call_counts)^2))
+rmse9
+
+
+#Zero inflated Model
+model_zinb <- zeroinfl(
+  call_counts ~
+    # Count model (negative binomial part)
+    ann_prm_amt + tenure_at_snapshot + digital_contact_ind +
+    household_policy_counts + geo_group + channel +
+    has_prior_carrier + trm_len_mo |
+    # Zero-inflation model (logistic part)
+    digital_contact_ind + household_policy_counts + tenure_at_snapshot,
+  dist = "negbin",
+  data = train_data2
+)
+
+
+model_zinb <- zeroinfl(
+  call_counts ~.-ann_prm_amt-digital_contact_ind-home_lot_sq_footage-newest_veh_age-tenure_at_snapshot-trm_len_mo|
+    # Zero-inflation model (logistic part)
+    digital_contact_ind + household_policy_counts +
+    tenure_at_snapshot + telematics_ind + acq_method,
+  dist = "negbin",
+  data = train_data2
+)
+
+
+zip_pred <- predict(model_zinb, newdata = test_data2, type = "response")
+rmse11 <- sqrt(mean((zip_pred - test_data2$call_counts)^2))
+rmse11
+
+
+
+#Hurdle Model
+model_hurdle <- hurdle(
+  call_counts ~
+    ann_prm_amt + tenure_at_snapshot + digital_contact_ind +
+    household_policy_counts + geo_group + channel +
+    has_prior_carrier + trm_len_mo + newest_veh_age |
+    digital_contact_ind + household_policy_counts +
+    tenure_at_snapshot + telematics_ind + acq_method,
+  dist = "negbin",
+  data = train_data2
+)
+
+hrdl_pred <- predict(model_hurdle, newdata = test_data2, type = "response")
+rmse12 <- sqrt(mean((hrdl_pred - test_data2$call_counts)^2))
+rmse12
+
+
+
+
+
+#GBM Model
+
+train_data2$trm_len_mo
+
+
+library(gbm)
+
+gbm.poisson <- gbm(call_counts ~ ., data = train_data2, distribution="poisson", n.tree = 500, interaction.depth=7, shrinkage=0.01,n.minobsinnode=20,bag.fraction=1)
+
+gbm.poisson <- gbm(call_counts ~ .-ann_prm_amt-digital_contact_ind-home_lot_sq_footage-newest_veh_age-tenure_at_snapshot-trm_len_mo, data = train_data2, distribution="poisson", n.tree = 1500, interaction.depth=7, shrinkage=0.01,n.minobsinnode=20,bag.fraction=1)
+
+gbm.poissonpred <- predict(gbm.poisson, newdata = test_data2, type = "response")
+# Evaluate model performance using RMSE
+rmse10 <- sqrt(mean((gbm.poissonpred - test_data2$call_counts)^2))
+rmse10
+
+gbm.poissonpred <- predict(gbm.poisson, newdata = train_data2, type = "response")
+rmse110 <- sqrt(mean((gbm.poissonpred - train_data2$call_counts)^2))
+rmse110
+
+
+
+
+
+#Predicting on the Test Set
+travtst <- read.csv("test_data.csv")
+
+summary(travtst)
+
+#Exclude first column (ID column)
+travtst2 <- travtst[,-1]
+
+travtst2 <- travtst2 %>%
+  mutate(across(where(is.character), as.factor))
+
+
+travtst2[travtst2 == -2 |travtst2 == -20 | travtst2 == "missing"] <- NA
+
+
+travtst2 = complete(mice(travtst2, method = "pmm"))
+
+summary(travtst2)
+
+travtst2$acq_method <- factor(travtst2$acq_method, levels = setdiff(levels(travtst2$acq_method), "missing"))
+
+
+
+gbm.poissonpred <- predict(gbm.poisson, newdata = travtst2, type = "response")
+
+subfile <- data.frame(travtst$id,gbm.poissonpred)
+
+write.csv(subfile, file = "C:\\Users\\aarif\\OneDrive\\Desktop\\2024-Travelers-University-Modeling-Competition\\DataTest4.csv", row.names=TRUE)
 
 
 
@@ -242,101 +288,41 @@ print(pred3)
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+#Permutation test
 
 trav_num <- data.frame(trav$X12m_call_history,trav$ann_prm_amt,trav$digital_contact_ind,trav$home_lot_sq_footage,trav$household_policy_counts,trav$newest_veh_age,trav$tenure_at_snapshot,trav$trm_len_mo)
 
-trav_num
 
+call_counts <- trav$call_counts
 
+# Define the permutation test function
+permutation_test <- function(response, predictor, n_permutations = 1000) {
+  # Observed correlation
+  observed_cor <- cor(response, predictor, method = "pearson")
 
+  # Generate permutation distribution
+  permuted_cor <- replicate(n_permutations, {
+    permuted_response <- sample(response)  # Shuffle response
+    cor(permuted_response, predictor, method = "pearson")
+  })
 
-cor_matrix <- cor(trav_num, use = "complete.obs")
-cor_matrix
+  # Calculate p-value
+  p_value <- mean(abs(permuted_cor) >= abs(observed_cor))
 
-corrplot(cor_matrix, method = "circle")
-#high correlation between trav.trm_len_mo and trav.newest_veh_age
+  return(list(observed_cor = observed_cor, p_value = p_value))
+}
 
+# Apply permutation test to each numeric predictor
+results <- lapply(trav_num, function(predictor) {
+  permutation_test(response = call_counts, predictor = predictor)
+})
 
-hist(trav$call_counts)
+# Name results by the variable names in trav_num
+names(results) <- names(trav_num)
 
+# View the results
+results
 
-
-#Imputing missing values
-preProc <- preProcess(trav, method = "medianImpute")
-trav_imputed <- predict(preProc, trav)
-
-summary(trav_imputed)
-
-
-
-
-trainIndex <- createDataPartition(trav_imputed$call_counts, p = 0.8, list = FALSE)
-train_data <- trav_imputed[trainIndex, ]
-test_data <- trav_imputed[-trainIndex, ]
-
-
-
-
-
-
-
-
-
-
-
-
-cat("RMSE on the test set:", rmse, "\n")
-
-
-
-
-
-
-#Method 3 - Random Forest using Train Function
-
-
-set.seed(161)
-
-rf.cv1 <-train(call_counts~., data = trav_imputed, method="rf",
-               trControl=trainControl(method = "repeatedcv", number = 5, repeats = 3),
-               metric="RMSE",tuneGrid=expand.grid(mtry=c(1:4)), ntree=101, importance=T)
-
-
-
-summary(trav$call_counts)
-
-summary(pred$predictions)
-
-
-
-#Issues - a lot of missing values - remove? impute?
-#The response (call count) has a lot of zeroes - try a zero-inflated poisson, or a hurdle model
-#Multicollinearity issues
 
 
 
