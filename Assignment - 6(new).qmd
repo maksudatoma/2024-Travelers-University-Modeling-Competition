@@ -9,7 +9,7 @@ execute:
   echo: false
   warning: false
 columns: 2
-format: html
+format: pdf
 editor: visual
 ---
 
@@ -202,11 +202,6 @@ ggplot(data = melted_corr, aes(x = Var1, y = Var2, fill = value)) +
 
 ```
 
-## Imputing Missing Values
-
-The dataset is prepared by converting character columns to factors and handling missing data by replacing coded values such as `-2`, `-20`, and "missing" with `NA`. The code then calculates the percentage of zero values in the `call_counts` column to assess the distribution of the response variable. To address these missing values, the `mice` function performs multiple imputation, generating five potential datasets and selecting one for subsequent analysis to ensure consistency. For imputation, the `mice` function is used with a vector of default methods tailored to different types of variables: predictive mean matching (`pmm`) for numeric data, logistic regression imputation (`logreg`) for binary (factor with 2 levels), polytomous regression imputation (`polyreg`) for unordered categorical data with more than two levels, and the proportional odds model (`polr`) for ordered factors with more than two levels.
-
-Finally, adjustments are made to factor variables to exclude "missing" as a level, preserving data integrity.
 
 ## ANOVA for relationship between Call Count and Categorical Predictors
 
@@ -226,8 +221,7 @@ names(anova_results) <- names(trav)[cat_vars]
 anova_results
 ```
 
-**Call_counts distribution with significant predictor**
-The violin plot shows the distribution of call_counts across different acquisition methods (acq_method). All methods have a heavily skewed distribution, with most values near 0 and a few extreme outliers, indicating that the majority of customers make few calls. The distributions are nearly identical across all methods, including the NA category, suggesting that acq_method has minimal impact on call_counts. This aligns with the ANOVA results, where acq_method was marginally significant. Further analysis, such as handling outliers or exploring interactions with other variables, may provide additional insights.
+**Call_counts distribution with significant predictor** The violin plot shows the distribution of call_counts across different acquisition methods (acq_method). All methods have a heavily skewed distribution, with most values near 0 and a few extreme outliers, indicating that the majority of customers make few calls. The distributions are nearly identical across all methods, including the NA category, suggesting that acq_method has minimal impact on call_counts. This aligns with the ANOVA results, where acq_method was marginally significant. Further analysis, such as handling outliers or exploring interactions with other variables, may provide additional insights.
 
 ```{r}
 
@@ -242,6 +236,27 @@ ggplot(trav, aes(x = acq_method, y = call_counts)) +
 
 ```
 
+## Imputing Missing Values
+
+The dataset is prepared by converting character columns to factors and handling missing data by replacing coded values such as `-2`, `-20`, and "missing" with `NA`. The code then calculates the percentage of zero values in the `call_counts` column to assess the distribution of the response variable. To address these missing values, the `mice` function performs multiple imputation, generating five potential datasets and selecting one for subsequent analysis to ensure consistency. For imputation, the `mice` function is used with a vector of default methods tailored to different types of variables: predictive mean matching (`pmm`) for numeric data, logistic regression imputation (`logreg`) for binary (factor with 2 levels), polytomous regression imputation (`polyreg`) for unordered categorical data with more than two levels, and the proportional odds model (`polr`) for ordered factors with more than two levels.
+
+Finally, adjustments are made to factor variables to exclude "missing" as a level, preserving data integrity.
+
+The imputed dataset was saved as trav3 and imported for inclusion in this document. The code for imputation is included in the appendix.
+
+```{r}
+
+trav3 <- read.csv("trav3.csv")
+trav3 <- trav3 %>%
+  mutate(across(where(is.character), as.factor))
+
+trav3$acq_method <- factor(trav3$acq_method, levels = setdiff(levels(trav3$acq_method), "missing"))
+trav3$pol_edeliv_ind <- factor(trav3$pol_edeliv_ind, levels = setdiff(levels(trav3$pol_edeliv_ind), "missing"))
+trav3$telematics_ind <- factor(trav3$telematics_ind, levels = setdiff(levels(trav3$telematics_ind), "missing"))
+
+```
+
+
 ## Splitting Dataset
 
 Before fitting any models, we will split the provided training dataset into three subsets: 60% for training, 20% for validation, and 20% for testing. This split will be done while ensuring stratification based on the variable call_counts. Stratification preserves the distribution of call_counts across all subsets, confirmed by the nearly identical means of the subsets. The training set is used to build the model, the validation set is used for tuning and performance assessment during training, and the test set is reserved for final evaluation. This ensures unbiased and representative splits for reliable model training and testing.
@@ -249,11 +264,11 @@ Before fitting any models, we will split the provided training dataset into thre
 ```{r}
 # Split data into training set (60%)
 set.seed(123)  # For reproducibility
-trainIndex <- createDataPartition(trav$call_counts, p = 0.6, list = FALSE)
-train_data <- trav[trainIndex, ]
+trainIndex <- createDataPartition(trav3$call_counts, p = 0.6, list = FALSE)
+train_data <- trav3[trainIndex, ]
 
 # Remaining data (40%) for validation and test sets
-rem_data <- trav[-trainIndex, ]
+rem_data <- trav3[-trainIndex, ]
 
 # Split remaining data into validation (20%) and test (20%)
 validIndex <- createDataPartition(rem_data$call_counts, p = 0.5, list = FALSE)
@@ -268,7 +283,7 @@ mean(test_data$call_counts)
 
 ## Models
 
-**Model 1 GBM** **:** We trained a GBM model using 500 trees with a Poisson distribution to predict call_counts. The hyperparameters for this model were selected by trial and error. Attempts to use specific functions (e.g. the train function) for hyperparameter tuning were unsuccessful due to insufficient computer memory needed to execute the code. This model achieved a test RMSE of 36.0051, indicating moderate prediction error, suggesting the predictions deviate by about 36 calls on average from actual values.
+**Model 1 GBM** **:** We trained a GBM model using 500 trees with a Poisson distribution to predict call_counts. The hyperparameters for this model were selected by trial and error. Attempts to use specific functions (e.g. the train function) for hyperparameter tuning were unsuccessful due to insufficient computer memory needed to execute the code. This model achieved a test RMSE of 36.005, indicating moderate prediction error, suggesting the predictions deviate by about 36 calls on average from actual values.
 
 The variable importance plot shows the relative importance of the top 10 predictors. `X_12m_call_history` is the most important predictor, with its relative information gain being 92.64%. The remaining 9 variables account for only 7.38% of the relative information gain.
 
@@ -337,7 +352,6 @@ library(caret)
 library(dplyr)
 library(mice)
 
-
 trav <- read.csv("train_data.csv")
 
 #Exclude first column (ID column)
@@ -360,7 +374,7 @@ per0resp
 ```
 
 ```{r, , fig.pos="H"}
-#| label: appendix A
+#| label: appendix B
 #| echo: true
 #| eval: false
 # Plot histogram for call_counts
@@ -377,9 +391,8 @@ hist(trav$call_counts,
 
 ```
 
-
 ```{r, , fig.pos="H"}
-#| label: appendix A
+#| label: appendix C
 #| echo: true
 #| eval: false
 #Visualising pattern of missingness
@@ -402,12 +415,12 @@ library(VIM)
 
 # Visualize missing data with a matrix plot
 aggr(trav, col = c("skyblue", "red"), numbers = TRUE, sortVars = TRUE, 
-     labels = names(trav), cex.axis = 0.7, gap = 3, ylab = c("Missing Data", "Pattern"))
+     labels = names(trav), cex.axis = 0.7, gap = 3, 
+     ylab = c("Missing Data", "Pattern"))
 ```
 
-
 ```{r, , fig.pos="H"}
-#| label: appendix A
+#| label: appendix D
 #| echo: true
 #| eval: false
 # Load necessary library
@@ -434,7 +447,7 @@ ggplot(data = melted_corr, aes(x = Var1, y = Var2, fill = value)) +
 ```
 
 ```{r, , fig.pos="H"}
-#| label: appendix A
+#| label: appendix E
 #| echo: true
 #| eval: false
 #ANOVA for categorical predictors
@@ -451,7 +464,7 @@ anova_results
 ```
 
 ```{r, , fig.pos="H"}
-#| label: appendix A
+#| label: appendix F
 #| echo: true
 #| eval: false
 # Create violin plot
@@ -464,7 +477,7 @@ ggplot(trav, aes(x = acq_method, y = call_counts)) +
 ```
 
 ```{r, , fig.pos="H"}
-#| label: appendix A
+#| label: appendix G
 #| echo: true
 #| eval: false
 # Split data into training set (60%)
@@ -487,12 +500,13 @@ mean(test_data$call_counts)
 ```
 
 ```{r, , fig.pos="H"}
-#| label: appendix A
+#| label: appendix H
 #| echo: true
 #| eval: false
 #Model 1: GBM Model
 library(gbm)
-gbm.poisson <- gbm(call_counts ~ ., data = train_data, distribution="poisson", n.tree = 500, interaction.depth=7, shrinkage=0.01,n.minobsinnode=20,bag.fraction=1)
+gbm.poisson <- gbm(call_counts ~ ., data = train_data, distribution="poisson", n.tree = 500, 
+                   interaction.depth=7, shrinkage=0.01,n.minobsinnode=20,bag.fraction=1)
 
 
 gbm.poissonpred <- predict(gbm.poisson, newdata = test_data, type = "response")
@@ -509,12 +523,13 @@ var_importance <- summary(gbm.poisson, plotit = FALSE)
 print(var_importance)
 
 # Plot variable importance manually
-barplot(var_importance$rel.inf, names.arg = var_importance$var, las = 2, col = "lightblue", main = "Variable Importance")
+barplot(var_importance$rel.inf, names.arg = var_importance$var, las = 2, 
+        col = "lightblue", main = "Variable Importance")
 
 ```
 
 ```{r, , fig.pos="H"}
-#| label: appendix A
+#| label: appendix I
 #| echo: true
 #| eval: false
 
@@ -525,8 +540,9 @@ library(pscl)
 # Zero-Inflated Poisson model
 
 zip_model <- zeroinfl(call_counts ~ 
-                        X12m_call_history + bi_limit_group + acq_method + geo_group
-                        + acq_method*geo_group + bi_limit_group*X12m_call_history |
+                        X12m_call_history + bi_limit_group + acq_method 
+                      + geo_group + acq_method*geo_group +
+                        bi_limit_group*X12m_call_history |
                         X12m_call_history + ann_prm_amt, data = train_data, dist = 
                         "poisson")
 
