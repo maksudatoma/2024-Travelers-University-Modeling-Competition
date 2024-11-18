@@ -1,0 +1,809 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.3.450">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+<meta name="dcterms.date" content="2024-11-17">
+
+<title>Assignment - 6</title>
+<style>
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+/* CSS for syntax highlighting */
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+  }
+pre.numberSource { margin-left: 3em;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+</style>
+
+
+<script src="Assignment - 6(new)_files/libs/clipboard/clipboard.min.js"></script>
+<script src="Assignment - 6(new)_files/libs/quarto-html/quarto.js"></script>
+<script src="Assignment - 6(new)_files/libs/quarto-html/popper.min.js"></script>
+<script src="Assignment - 6(new)_files/libs/quarto-html/tippy.umd.min.js"></script>
+<script src="Assignment - 6(new)_files/libs/quarto-html/anchor.min.js"></script>
+<link href="Assignment - 6(new)_files/libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="Assignment - 6(new)_files/libs/quarto-html/quarto-syntax-highlighting.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<script src="Assignment - 6(new)_files/libs/bootstrap/bootstrap.min.js"></script>
+<link href="Assignment - 6(new)_files/libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="Assignment - 6(new)_files/libs/bootstrap/bootstrap.min.css" rel="stylesheet" id="quarto-bootstrap" data-mode="light">
+
+
+</head>
+
+<body class="fullcontent">
+
+<div id="quarto-content" class="page-columns page-rows-contents page-layout-article">
+
+<main class="content" id="quarto-document-content">
+
+<header id="title-block-header" class="quarto-title-block default">
+<div class="quarto-title">
+<h1 class="title">Assignment - 6</h1>
+</div>
+
+
+
+<div class="quarto-title-meta">
+
+    <div>
+    <div class="quarto-title-meta-heading">Author</div>
+    <div class="quarto-title-meta-contents">
+             <p>Maksuda Aktar Toma, Aarif Baksh </p>
+          </div>
+  </div>
+    
+    <div>
+    <div class="quarto-title-meta-heading">Published</div>
+    <div class="quarto-title-meta-contents">
+      <p class="date">November 17, 2024</p>
+    </div>
+  </div>
+  
+    
+  </div>
+  
+
+</header>
+
+<section id="business-problem" class="level2">
+<h2 class="anchored" data-anchor-id="business-problem">Business Problem</h2>
+<p>As an employee of CloverShield Insurance company, you are tasked with addressing the challenge of reducing call center costs. Your business partners have requested the development of a predictive model that, based on the provided segmentation, forecasts the number of times a policyholder is likely to call. This model aims to optimize resource allocation and enhance cost-efficiency in call center operations.</p>
+<p>To find all our works on this project go to this link <a href="https://github.com/maksudatoma/2024-Travelers-University-Modeling-Competition/tree/main" class="uri">https://github.com/maksudatoma/2024-Travelers-University-Modeling-Competition/tree/main</a></p>
+</section>
+<section id="introduction" class="level2">
+<h2 class="anchored" data-anchor-id="introduction">Introduction</h2>
+<p>The data obtained from Kaggle, is split into two parts: training data and validation data. In the validation data, the target variable, call_counts, is omitted. The training dataset contains 80,000 samples, and the validation dataset contains 20,000 samples.</p>
+<p><strong>Variable Descriptions</strong></p>
+<ul>
+<li><p><code>ann_prm_amt</code>: Annualized Premium Amount</p></li>
+<li><p><code>bi_limit_group</code>: Body injury limit group (SP stands for single split limit coverage, CSL stands for combined single limit coverage)</p></li>
+<li><p><code>channel</code>: Distribution channel</p></li>
+<li><p><code>newest_veh_age</code>: The age of the newest vehicle insured on a policy (-20 represents non-auto or missing values)</p></li>
+<li><p><code>geo_group</code>: Indicates if the policyholder lives in a rural, urban, or suburban area</p></li>
+<li><p><code>has_prior_carrier</code>: Did the policyholder come from another carrier</p></li>
+<li><p><code>home_lot_sq_footage</code>: Square footage of the policyholder’s home lot</p></li>
+<li><p><code>household_group</code>: The types of policy in household</p></li>
+<li><p><code>household_policy_counts</code>: Number of policies in the household</p></li>
+<li><p><code>telematics_ind</code>: Telematic indicator (0 represents auto missing values or didn’t enroll and -2 represents non-auto)</p></li>
+<li><p><code>digital_contacts_ind</code>: An indicator to denote if the policy holder has opted into digital communication</p></li>
+<li><p><code>12m_call_history</code>: Past one year call count</p></li>
+<li><p><code>tenure_at_snapshot</code>:Policy active length in month</p></li>
+<li><p><code>pay_type_code</code>: Code indicating the payment method</p></li>
+<li><p><code>acq_method</code>:The acquisition method (Miss represents missing values)</p></li>
+<li><p><code>trm_len_mo</code>: Term length month</p></li>
+<li><p><code>pol_edeliv_ind</code>: An indicator for email delivery of documents (-2 represents missing values)</p></li>
+<li><p><code>aproduct_sbtyp_grp</code>: Product subtype group</p></li>
+<li><p><code>product_sbtyp</code>: Product subtype</p></li>
+<li><p><code>call_counts</code>: The number of call count generated by each policy (target variable)</p></li>
+</ul>
+</section>
+<section id="data-cleaning-and-missing-value-count" class="level2">
+<h2 class="anchored" data-anchor-id="data-cleaning-and-missing-value-count">Data Cleaning and Missing Value count</h2>
+<p>First, we prepares the data by cleaning and transforming it (e.g., converting characters to factors, marking missing values.)</p>
+<table class="table">
+<caption><strong>Table 1: Variables with Missing Values</strong></caption>
+<colgroup>
+<col style="width: 38%">
+<col style="width: 61%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>Variable</th>
+<th>Number of missing values</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>acq_method</td>
+<td>16,066</td>
+</tr>
+<tr class="even">
+<td>newest_veh_age</td>
+<td>58,015</td>
+</tr>
+<tr class="odd">
+<td>pol_edeliv_ind</td>
+<td>838</td>
+</tr>
+<tr class="even">
+<td>telematics_ind</td>
+<td>58,015</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Zero Values:</strong> 50.18% of the rows in the call_counts column are zeros, indicating that most customers made no calls. This is significant and might suggest using models like Zero-Inflated Poisson (ZIP) to handle the high frequency of zeros.</p>
+<p><strong>Key Takeaways</strong> - The dataset contains both numeric and categorical variables, with some columns having significant missing values. - The target variable (call_counts) is heavily zero-inflated and skewed, which may require specialized modeling approaches. - Some numeric variables, like ann_prm_amt and home_lot_sq_footage, have wide ranges and outliers, suggesting that data transformation or scaling may be beneficial.</p>
+<div class="cell">
+<div class="cell-output cell-output-stdout">
+<pre><code>    acq_method newest_veh_age pol_edeliv_ind telematics_ind 
+         16066          58015            838          58015 </code></pre>
+</div>
+<div class="cell-output cell-output-stdout">
+<pre><code>[1] 50.18</code></pre>
+</div>
+</div>
+<div class="cell">
+<div class="cell-output-display">
+<p><img src="Assignment---6-new-_files/figure-html/unnamed-chunk-2-1.png" class="img-fluid" width="672"></p>
+</div>
+</div>
+</section>
+<section id="missing-value-display" class="level2">
+<h2 class="anchored" data-anchor-id="missing-value-display">Missing Value display</h2>
+<ol type="1">
+<li>This UpSet Plot shows the patterns and extent of missing data across variables. The horizontal bars on the left represent the total missing values for each variable, with newest_veh_age and telematics_ind having the most missing data. The vertical bars represent the number of rows with specific missingness patterns, with the tallest bar (~45,731 rows) indicating that only newest_veh_age has missing values. The connected dots below highlight combinations of missingness across variables, with fewer rows having simultaneous missing values in multiple variables. This analysis suggests focusing on simple imputation for variables with isolated missingness and predictive modeling for overlapping patterns</li>
+</ol>
+<div class="cell">
+<div class="cell-output-display">
+<p><img src="Assignment---6-new-_files/figure-html/unnamed-chunk-3-1.png" class="img-fluid" width="672"></p>
+</div>
+</div>
+<ol start="2" type="1">
+<li>This chart shows the percentage and count of missing values for each feature in the dataset. Most features (green bars) have no missing data, making them ready for modeling. However, newest_veh_age and telematics_ind have significant missingness (72.52%), requiring advanced imputation or removal. acq_method has moderate missingness (20.08%), which can be addressed with simpler imputation methods. Features like pol_edeliv_ind (1.05% missing) require minimal effort to handle, such as mean or mode imputation. The focus should be on addressing features with high and moderate missingness to ensure data quality for modeling.</li>
+</ol>
+<div class="cell">
+<div class="cell-output-display">
+<p><img src="Assignment---6-new-_files/figure-html/unnamed-chunk-4-1.png" class="img-fluid" width="672"></p>
+</div>
+</div>
+<p>3.This visualization highlights missing data patterns in the dataset. The left panel shows that telematics_ind and newest_veh_age have the highest proportion of missing values (~70%), while pol_edeliv_ind has a smaller proportion (~10%). The right panel reveals that most rows have no missing data (blue squares), but missingness in telematics_ind and newest_veh_age often co-occurs. Other features have negligible or no missing data. It is recommended to either impute or exclude telematics_ind and newest_veh_age depending on their importance, while simpler imputation methods can handle pol_edeliv_ind.</p>
+<div class="cell">
+<div class="cell-output-display">
+<p><img src="Assignment---6-new-_files/figure-html/unnamed-chunk-5-1.png" class="img-fluid" width="672"></p>
+</div>
+<div class="cell-output cell-output-stdout">
+<pre><code>
+ Variables sorted by number of missings: 
+                Variable     Count
+          newest_veh_age 0.7251875
+          telematics_ind 0.7251875
+              acq_method 0.2008250
+          pol_edeliv_ind 0.0104750
+       X12m_call_history 0.0000000
+             ann_prm_amt 0.0000000
+          bi_limit_group 0.0000000
+                 channel 0.0000000
+     digital_contact_ind 0.0000000
+               geo_group 0.0000000
+       has_prior_carrier 0.0000000
+     home_lot_sq_footage 0.0000000
+         household_group 0.0000000
+ household_policy_counts 0.0000000
+           pay_type_code 0.0000000
+         prdct_sbtyp_grp 0.0000000
+           product_sbtyp 0.0000000
+      tenure_at_snapshot 0.0000000
+              trm_len_mo 0.0000000
+             call_counts 0.0000000</code></pre>
+</div>
+</div>
+</section>
+<section id="correlation-structure-for-call-count-and-numeric-predictors" class="level2">
+<h2 class="anchored" data-anchor-id="correlation-structure-for-call-count-and-numeric-predictors">Correlation Structure for Call Count and Numeric Predictors</h2>
+<p>The correlations output show that X12m_call_history (r=0.28) is the strongest numeric predictor of call_counts, with a moderate positive relationship. Other variables like telematics_ind (𝑟=0.0059) and pol_edeliv_ind (𝑟=0.0049) have very weak positive correlations, while variables like household_policy_counts (r=−0.0033) and newest_veh_age (r=−0.0030) have negligible negative correlations. Most numeric variables show correlations close to zero, suggesting little to no linear relationship with the target variable. Overall, X12m_call_history is the most promising numeric predictor, while others may require further evaluation for relevance in modeling.</p>
+<div class="cell">
+<div class="cell-output cell-output-stdout">
+<pre><code>      X12m_call_history             ann_prm_amt     digital_contact_ind 
+           0.2799527640            0.0009293953            0.0026141348 
+      has_prior_carrier     home_lot_sq_footage household_policy_counts 
+           0.0005052426            0.0009486643           -0.0033470952 
+         newest_veh_age          pol_edeliv_ind          telematics_ind 
+          -0.0030184309            0.0048667762            0.0058867474 
+     tenure_at_snapshot              trm_len_mo             call_counts 
+          -0.0014746341            0.0007817227            1.0000000000 </code></pre>
+</div>
+</div>
+<p><strong>Correlation Matrix:</strong> The correlation heatmap shows that X12m_call_history has the strongest positive correlation (r≈0.28) with call_counts, making it the most important numeric predictor. Most other variables, such as ann_prm_amt, household_policy_counts, and home_lot_sq_footage, have weak or no significant correlations with the target variable, as indicated by grey cells. There are no strong negative correlations in the dataset. Overall, the relationships are mostly weak, suggesting that non-linear models or feature engineering may be needed to capture more complex interactions. The heatmap helps identify X12m_call_history as a key feature while others may contribute less linearly.</p>
+<div class="cell">
+<div class="cell-output-display">
+<p><img src="Assignment---6-new-_files/figure-html/unnamed-chunk-7-1.png" class="img-fluid" width="672"></p>
+</div>
+</div>
+</section>
+<section id="imputing-missing-values" class="level2">
+<h2 class="anchored" data-anchor-id="imputing-missing-values">Imputing Missing Values</h2>
+<p>The dataset is prepared by converting character columns to factors and handling missing data by replacing coded values such as <code>-2</code>, <code>-20</code>, and “missing” with <code>NA</code>. The code then calculates the percentage of zero values in the <code>call_counts</code> column to assess the distribution of the response variable. To address these missing values, the <code>mice</code> function performs multiple imputation, generating five potential datasets and selecting one for subsequent analysis to ensure consistency. For imputation, the <code>mice</code> function is used with a vector of default methods tailored to different types of variables: predictive mean matching (<code>pmm</code>) for numeric data, logistic regression imputation (<code>logreg</code>) for binary (factor with 2 levels), polytomous regression imputation (<code>polyreg</code>) for unordered categorical data with more than two levels, and the proportional odds model (<code>polr</code>) for ordered factors with more than two levels.</p>
+<p>Finally, adjustments are made to factor variables to exclude “missing” as a level, preserving data integrity.</p>
+</section>
+<section id="anova-for-relationship-between-call-count-and-categorical-predictors" class="level2">
+<h2 class="anchored" data-anchor-id="anova-for-relationship-between-call-count-and-categorical-predictors">ANOVA for relationship between Call Count and Categorical Predictors</h2>
+<p>The ANOVA results evaluate the effect of categorical variables on call_counts. Among the predictors, acq_method is marginally significant (p=0.0518), suggesting it may have a weak influence on call_counts. All other categorical variables, such as bi_limit_group, channel, and geo_group, have p-values greater than 0.1, indicating no statistically significant relationship with the target variable. Additionally, 16,066 rows were excluded due to missing data, which might affect the robustness of the results. It is recommended to focus on acq_method for further analysis and consider handling missing data to improve model accuracy.</p>
+<div class="cell">
+<div class="cell-output cell-output-stdout">
+<pre><code>$acq_method
+               Df   Sum Sq Mean Sq F value Pr(&gt;F)  
+trav[[var]]     3    11110    3703   2.579 0.0518 .
+Residuals   63930 91805237    1436                 
+---
+Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+16066 observations deleted due to missingness
+
+$bi_limit_group
+               Df    Sum Sq Mean Sq F value Pr(&gt;F)
+trav[[var]]     7      2207   315.3    0.22  0.981
+Residuals   79992 114719475  1434.1               
+
+$channel
+               Df    Sum Sq Mean Sq F value Pr(&gt;F)
+trav[[var]]     1       146   146.2   0.102   0.75
+Residuals   79998 114721536  1434.1               
+
+$geo_group
+               Df    Sum Sq Mean Sq F value Pr(&gt;F)
+trav[[var]]     2      5412    2706   1.887  0.152
+Residuals   79997 114716270    1434               
+
+$household_group
+               Df    Sum Sq Mean Sq F value Pr(&gt;F)
+trav[[var]]     3      2624   874.7    0.61  0.608
+Residuals   79996 114719058  1434.1               
+
+$pay_type_code
+               Df    Sum Sq Mean Sq F value Pr(&gt;F)
+trav[[var]]     2       117    58.7   0.041   0.96
+Residuals   79997 114721565  1434.1               
+
+$prdct_sbtyp_grp
+               Df    Sum Sq Mean Sq F value Pr(&gt;F)
+trav[[var]]     2      1861   930.6   0.649  0.523
+Residuals   79997 114719821  1434.1               
+
+$product_sbtyp
+               Df    Sum Sq Mean Sq F value Pr(&gt;F)
+trav[[var]]     2       117    58.7   0.041   0.96
+Residuals   79997 114721565  1434.1               </code></pre>
+</div>
+</div>
+<p><strong>Call_counts distribution with significant predictor</strong> The violin plot shows the distribution of call_counts across different acquisition methods (acq_method). All methods have a heavily skewed distribution, with most values near 0 and a few extreme outliers, indicating that the majority of customers make few calls. The distributions are nearly identical across all methods, including the NA category, suggesting that acq_method has minimal impact on call_counts. This aligns with the ANOVA results, where acq_method was marginally significant. Further analysis, such as handling outliers or exploring interactions with other variables, may provide additional insights.</p>
+<div class="cell">
+<div class="cell-output-display">
+<p><img src="Assignment---6-new-_files/figure-html/unnamed-chunk-9-1.png" class="img-fluid" width="672"></p>
+</div>
+</div>
+</section>
+<section id="splitting-dataset" class="level2">
+<h2 class="anchored" data-anchor-id="splitting-dataset">Splitting Dataset</h2>
+<p>Before fitting any models, we will split the provided training dataset into three subsets: 60% for training, 20% for validation, and 20% for testing. This split will be done while ensuring stratification based on the variable call_counts. Stratification preserves the distribution of call_counts across all subsets, confirmed by the nearly identical means of the subsets. The training set is used to build the model, the validation set is used for tuning and performance assessment during training, and the test set is reserved for final evaluation. This ensures unbiased and representative splits for reliable model training and testing.</p>
+<div class="cell">
+<div class="cell-output cell-output-stdout">
+<pre><code>[1] 25.93654</code></pre>
+</div>
+<div class="cell-output cell-output-stdout">
+<pre><code>[1] 25.88844</code></pre>
+</div>
+<div class="cell-output cell-output-stdout">
+<pre><code>[1] 25.85405</code></pre>
+</div>
+</div>
+</section>
+<section id="models" class="level2">
+<h2 class="anchored" data-anchor-id="models">Models</h2>
+<p><strong>Model 1 GBM</strong> <strong>:</strong> We trained a GBM model using 500 trees with a Poisson distribution to predict call_counts. The hyperparameters for this model were selected by trial and error. Attempts to use specific functions (e.g.&nbsp;the train function) for hyperparameter tuning were unsuccessful due to insufficient computer memory needed to execute the code. This model achieved a test RMSE of 36.0051, indicating moderate prediction error, suggesting the predictions deviate by about 36 calls on average from actual values.</p>
+<p>The variable importance plot shows the relative importance of the top 10 predictors. <code>X_12m_call_history</code> is the most important predictor, with its relative information gain being 92.64%. The remaining 9 variables account for only 7.38% of the relative information gain.</p>
+<div class="cell">
+<div class="cell-output cell-output-stdout">
+<pre><code>[1] 36.05584</code></pre>
+</div>
+<div class="cell-output-display">
+<p><img src="Assignment---6-new-_files/figure-html/unnamed-chunk-11-1.png" class="img-fluid" width="672"></p>
+</div>
+<div class="cell-output cell-output-stdout">
+<pre><code>                                            var      rel.inf
+X12m_call_history             X12m_call_history 93.526063543
+ann_prm_amt                         ann_prm_amt  1.485827786
+tenure_at_snapshot           tenure_at_snapshot  1.382388639
+bi_limit_group                   bi_limit_group  0.919434033
+home_lot_sq_footage         home_lot_sq_footage  0.866828450
+acq_method                           acq_method  0.552749637
+newest_veh_age                   newest_veh_age  0.521227944
+pol_edeliv_ind                   pol_edeliv_ind  0.367799729
+geo_group                             geo_group  0.072965043
+digital_contact_ind         digital_contact_ind  0.050841381
+pay_type_code                     pay_type_code  0.047082796
+channel                                 channel  0.044233604
+household_policy_counts household_policy_counts  0.043407241
+telematics_ind                   telematics_ind  0.043253949
+prdct_sbtyp_grp                 prdct_sbtyp_grp  0.036205158
+household_group                 household_group  0.031968172
+has_prior_carrier             has_prior_carrier  0.007722895
+product_sbtyp                     product_sbtyp  0.000000000
+trm_len_mo                           trm_len_mo  0.000000000</code></pre>
+</div>
+<div class="cell-output cell-output-stdout">
+<pre><code>                                            var      rel.inf
+X12m_call_history             X12m_call_history 93.526063543
+ann_prm_amt                         ann_prm_amt  1.485827786
+tenure_at_snapshot           tenure_at_snapshot  1.382388639
+bi_limit_group                   bi_limit_group  0.919434033
+home_lot_sq_footage         home_lot_sq_footage  0.866828450
+acq_method                           acq_method  0.552749637
+newest_veh_age                   newest_veh_age  0.521227944
+pol_edeliv_ind                   pol_edeliv_ind  0.367799729
+geo_group                             geo_group  0.072965043
+digital_contact_ind         digital_contact_ind  0.050841381
+pay_type_code                     pay_type_code  0.047082796
+channel                                 channel  0.044233604
+household_policy_counts household_policy_counts  0.043407241
+telematics_ind                   telematics_ind  0.043253949
+prdct_sbtyp_grp                 prdct_sbtyp_grp  0.036205158
+household_group                 household_group  0.031968172
+has_prior_carrier             has_prior_carrier  0.007722895
+product_sbtyp                     product_sbtyp  0.000000000
+trm_len_mo                           trm_len_mo  0.000000000</code></pre>
+</div>
+<div class="cell-output-display">
+<p><img src="Assignment---6-new-_files/figure-html/unnamed-chunk-11-2.png" class="img-fluid" width="672"></p>
+</div>
+</div>
+<p><strong>Model 2 ZIP:</strong> The Zero-Inflated Poisson (ZIP) model predicts call_counts while accounting for excess zeros. An attempt to use all variable sin this model resulted in errors in convergence and <code>NA's</code> for the standard errors, z-value and p-value. Instead, a subset of variables was considered based on the variable importance plot from the GBM model.</p>
+<p>The ZIP model has has two parts:</p>
+<p><strong>The Count Model:</strong> variables that directly affect the frequency of calls were considered. These include <code>X12_m_call_history</code>, <code>bi_limit_group</code> , <code>acq_method</code> , <code>geo_group</code> , and interaction between <code>acq_method</code> and <code>geo_group</code> , and between <code>X12_m_call_history</code> and <code>bi_limit_group</code>.</p>
+<p><strong>The Zero-inflation Model:</strong> variables that indicate whether a customer is likely to have any calls at all were considered. These include <code>X12_m_call_history</code> and <code>ann_prm_amt</code>. The test RMSE from this model is 36.5291, which is marginally poorer than the RSME from the GBM model.</p>
+<div class="cell">
+<div class="cell-output cell-output-stdout">
+<pre><code>
+Call:
+zeroinfl(formula = call_counts ~ X12m_call_history + bi_limit_group + 
+    acq_method + geo_group + acq_method * geo_group + bi_limit_group * 
+    X12m_call_history | X12m_call_history + ann_prm_amt, data = train_data, 
+    dist = "poisson")
+
+Pearson residuals:
+     Min       1Q   Median       3Q      Max 
+-12.2931  -0.8647  -0.7948   0.6500  11.0759 
+
+Count model coefficients (poisson with log link):
+                                             Estimate Std. Error z value
+(Intercept)                                 3.9380412  0.0066910 588.555
+X12m_call_history                           0.0174296  0.0006291  27.706
+bi_limit_groupCSLGrp2                      -0.0635431  0.0084510  -7.519
+bi_limit_groupCSLGrp3                      -0.0151547  0.0085746  -1.767
+bi_limit_groupNonAuto                      -0.0451932  0.0060560  -7.463
+bi_limit_groupSPGrp1Miss                   -0.1067039  0.0085466 -12.485
+bi_limit_groupSPGrp2                       -0.0204733  0.0085495  -2.395
+bi_limit_groupSPGrp3                       -0.0335161  0.0085827  -3.905
+bi_limit_groupSPGrp4                       -0.0697019  0.0087231  -7.990
+acq_methodmethod2                          -0.0280901  0.0048045  -5.847
+acq_methodmethod3                          -0.0518030  0.0048603 -10.658
+acq_methodmethod4                          -0.0282855  0.0048476  -5.835
+geo_groupsuburban                          -0.0389944  0.0048030  -8.119
+geo_groupurban                             -0.0589009  0.0048447 -12.158
+acq_methodmethod2:geo_groupsuburban         0.0555448  0.0068406   8.120
+acq_methodmethod3:geo_groupsuburban         0.0434096  0.0069126   6.280
+acq_methodmethod4:geo_groupsuburban         0.0615120  0.0068446   8.987
+acq_methodmethod2:geo_groupurban            0.0572564  0.0068990   8.299
+acq_methodmethod3:geo_groupurban            0.0366115  0.0069517   5.267
+acq_methodmethod4:geo_groupurban            0.0580347  0.0069095   8.399
+X12m_call_history:bi_limit_groupCSLGrp2     0.0125910  0.0009331  13.494
+X12m_call_history:bi_limit_groupCSLGrp3     0.0071199  0.0010675   6.670
+X12m_call_history:bi_limit_groupNonAuto     0.0044323  0.0006508   6.810
+X12m_call_history:bi_limit_groupSPGrp1Miss  0.0150094  0.0010167  14.762
+X12m_call_history:bi_limit_groupSPGrp2      0.0041280  0.0011267   3.664
+X12m_call_history:bi_limit_groupSPGrp3      0.0031201  0.0009962   3.132
+X12m_call_history:bi_limit_groupSPGrp4      0.0101909  0.0010464   9.739
+                                           Pr(&gt;|z|)    
+(Intercept)                                 &lt; 2e-16 ***
+X12m_call_history                           &lt; 2e-16 ***
+bi_limit_groupCSLGrp2                      5.52e-14 ***
+bi_limit_groupCSLGrp3                      0.077161 .  
+bi_limit_groupNonAuto                      8.48e-14 ***
+bi_limit_groupSPGrp1Miss                    &lt; 2e-16 ***
+bi_limit_groupSPGrp2                       0.016634 *  
+bi_limit_groupSPGrp3                       9.42e-05 ***
+bi_limit_groupSPGrp4                       1.34e-15 ***
+acq_methodmethod2                          5.01e-09 ***
+acq_methodmethod3                           &lt; 2e-16 ***
+acq_methodmethod4                          5.38e-09 ***
+geo_groupsuburban                          4.71e-16 ***
+geo_groupurban                              &lt; 2e-16 ***
+acq_methodmethod2:geo_groupsuburban        4.67e-16 ***
+acq_methodmethod3:geo_groupsuburban        3.39e-10 ***
+acq_methodmethod4:geo_groupsuburban         &lt; 2e-16 ***
+acq_methodmethod2:geo_groupurban            &lt; 2e-16 ***
+acq_methodmethod3:geo_groupurban           1.39e-07 ***
+acq_methodmethod4:geo_groupurban            &lt; 2e-16 ***
+X12m_call_history:bi_limit_groupCSLGrp2     &lt; 2e-16 ***
+X12m_call_history:bi_limit_groupCSLGrp3    2.56e-11 ***
+X12m_call_history:bi_limit_groupNonAuto    9.75e-12 ***
+X12m_call_history:bi_limit_groupSPGrp1Miss  &lt; 2e-16 ***
+X12m_call_history:bi_limit_groupSPGrp2     0.000249 ***
+X12m_call_history:bi_limit_groupSPGrp3     0.001736 ** 
+X12m_call_history:bi_limit_groupSPGrp4      &lt; 2e-16 ***
+
+Zero-inflation model coefficients (binomial with logit link):
+                    Estimate Std. Error z value Pr(&gt;|z|)    
+(Intercept)        4.256e-01  1.910e-02  22.287   &lt;2e-16 ***
+X12m_call_history -1.672e-01  3.970e-03 -42.126   &lt;2e-16 ***
+ann_prm_amt       -2.069e-06  1.264e-05  -0.164     0.87    
+---
+Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1 
+
+Number of iterations in BFGS optimization: 54 
+Log-likelihood: -3.457e+05 on 30 Df</code></pre>
+</div>
+<div class="cell-output cell-output-stdout">
+<pre><code>[1] NA</code></pre>
+</div>
+</div>
+</section>
+<section id="appendix--r-code" class="level2">
+<h2 class="anchored" data-anchor-id="appendix--r-code">Appendix- R Code</h2>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb14"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(caret)</span>
+<span id="cb14-2"><a href="#cb14-2" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(dplyr)</span>
+<span id="cb14-3"><a href="#cb14-3" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(mice)</span>
+<span id="cb14-4"><a href="#cb14-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb14-5"><a href="#cb14-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb14-6"><a href="#cb14-6" aria-hidden="true" tabindex="-1"></a>trav <span class="ot">&lt;-</span> <span class="fu">read.csv</span>(<span class="st">"train_data.csv"</span>)</span>
+<span id="cb14-7"><a href="#cb14-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb14-8"><a href="#cb14-8" aria-hidden="true" tabindex="-1"></a><span class="co">#Exclude first column (ID column)</span></span>
+<span id="cb14-9"><a href="#cb14-9" aria-hidden="true" tabindex="-1"></a>trav <span class="ot">&lt;-</span> trav[,<span class="sc">-</span><span class="dv">1</span>]</span>
+<span id="cb14-10"><a href="#cb14-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb14-11"><a href="#cb14-11" aria-hidden="true" tabindex="-1"></a>trav <span class="ot">&lt;-</span> trav <span class="sc">%&gt;%</span></span>
+<span id="cb14-12"><a href="#cb14-12" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="fu">across</span>(<span class="fu">where</span>(is.character), as.factor))</span>
+<span id="cb14-13"><a href="#cb14-13" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb14-14"><a href="#cb14-14" aria-hidden="true" tabindex="-1"></a>trav[trav <span class="sc">==</span> <span class="sc">-</span><span class="dv">2</span> <span class="sc">|</span>trav <span class="sc">==</span> <span class="sc">-</span><span class="dv">20</span> <span class="sc">|</span> trav <span class="sc">==</span> <span class="st">"missing"</span>] <span class="ot">&lt;-</span> <span class="cn">NA</span></span>
+<span id="cb14-15"><a href="#cb14-15" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb14-16"><a href="#cb14-16" aria-hidden="true" tabindex="-1"></a>missing_counts <span class="ot">&lt;-</span> <span class="fu">colSums</span>(<span class="fu">is.na</span>(trav))</span>
+<span id="cb14-17"><a href="#cb14-17" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb14-18"><a href="#cb14-18" aria-hidden="true" tabindex="-1"></a><span class="co"># Display variables with missing values and their counts</span></span>
+<span id="cb14-19"><a href="#cb14-19" aria-hidden="true" tabindex="-1"></a>missing_counts[missing_counts <span class="sc">&gt;</span> <span class="dv">0</span>]</span>
+<span id="cb14-20"><a href="#cb14-20" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb14-21"><a href="#cb14-21" aria-hidden="true" tabindex="-1"></a><span class="co">#Zero values for the response</span></span>
+<span id="cb14-22"><a href="#cb14-22" aria-hidden="true" tabindex="-1"></a>per0resp <span class="ot">&lt;-</span> <span class="fu">sum</span>(trav<span class="sc">$</span>call_counts <span class="sc">==</span> <span class="dv">0</span>) <span class="sc">/</span> <span class="fu">nrow</span>(trav) <span class="sc">*</span> <span class="dv">100</span></span>
+<span id="cb14-23"><a href="#cb14-23" aria-hidden="true" tabindex="-1"></a>per0resp</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb15"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(caret)</span>
+<span id="cb15-2"><a href="#cb15-2" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(dplyr)</span>
+<span id="cb15-3"><a href="#cb15-3" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(mice)</span>
+<span id="cb15-4"><a href="#cb15-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb15-5"><a href="#cb15-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb15-6"><a href="#cb15-6" aria-hidden="true" tabindex="-1"></a>trav <span class="ot">&lt;-</span> <span class="fu">read.csv</span>(<span class="st">"train_data.csv"</span>)</span>
+<span id="cb15-7"><a href="#cb15-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb15-8"><a href="#cb15-8" aria-hidden="true" tabindex="-1"></a><span class="co">#Exclude first column (ID column)</span></span>
+<span id="cb15-9"><a href="#cb15-9" aria-hidden="true" tabindex="-1"></a>trav <span class="ot">&lt;-</span> trav[,<span class="sc">-</span><span class="dv">1</span>]</span>
+<span id="cb15-10"><a href="#cb15-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb15-11"><a href="#cb15-11" aria-hidden="true" tabindex="-1"></a>trav <span class="ot">&lt;-</span> trav <span class="sc">%&gt;%</span></span>
+<span id="cb15-12"><a href="#cb15-12" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="fu">across</span>(<span class="fu">where</span>(is.character), as.factor))</span>
+<span id="cb15-13"><a href="#cb15-13" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb15-14"><a href="#cb15-14" aria-hidden="true" tabindex="-1"></a>trav[trav <span class="sc">==</span> <span class="sc">-</span><span class="dv">2</span> <span class="sc">|</span>trav <span class="sc">==</span> <span class="sc">-</span><span class="dv">20</span> <span class="sc">|</span> trav <span class="sc">==</span> <span class="st">"missing"</span>] <span class="ot">&lt;-</span> <span class="cn">NA</span></span>
+<span id="cb15-15"><a href="#cb15-15" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb15-16"><a href="#cb15-16" aria-hidden="true" tabindex="-1"></a>missing_counts <span class="ot">&lt;-</span> <span class="fu">colSums</span>(<span class="fu">is.na</span>(trav))</span>
+<span id="cb15-17"><a href="#cb15-17" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb15-18"><a href="#cb15-18" aria-hidden="true" tabindex="-1"></a><span class="co"># Display variables with missing values and their counts</span></span>
+<span id="cb15-19"><a href="#cb15-19" aria-hidden="true" tabindex="-1"></a>missing_counts[missing_counts <span class="sc">&gt;</span> <span class="dv">0</span>]</span>
+<span id="cb15-20"><a href="#cb15-20" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb15-21"><a href="#cb15-21" aria-hidden="true" tabindex="-1"></a><span class="co">#Zero values for the response</span></span>
+<span id="cb15-22"><a href="#cb15-22" aria-hidden="true" tabindex="-1"></a>per0resp <span class="ot">&lt;-</span> <span class="fu">sum</span>(trav<span class="sc">$</span>call_counts <span class="sc">==</span> <span class="dv">0</span>) <span class="sc">/</span> <span class="fu">nrow</span>(trav) <span class="sc">*</span> <span class="dv">100</span></span>
+<span id="cb15-23"><a href="#cb15-23" aria-hidden="true" tabindex="-1"></a>per0resp</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb16"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(caret)</span>
+<span id="cb16-2"><a href="#cb16-2" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(dplyr)</span>
+<span id="cb16-3"><a href="#cb16-3" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(mice)</span>
+<span id="cb16-4"><a href="#cb16-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb16-5"><a href="#cb16-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb16-6"><a href="#cb16-6" aria-hidden="true" tabindex="-1"></a>trav <span class="ot">&lt;-</span> <span class="fu">read.csv</span>(<span class="st">"train_data.csv"</span>)</span>
+<span id="cb16-7"><a href="#cb16-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb16-8"><a href="#cb16-8" aria-hidden="true" tabindex="-1"></a><span class="co">#Exclude first column (ID column)</span></span>
+<span id="cb16-9"><a href="#cb16-9" aria-hidden="true" tabindex="-1"></a>trav <span class="ot">&lt;-</span> trav[,<span class="sc">-</span><span class="dv">1</span>]</span>
+<span id="cb16-10"><a href="#cb16-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb16-11"><a href="#cb16-11" aria-hidden="true" tabindex="-1"></a>trav <span class="ot">&lt;-</span> trav <span class="sc">%&gt;%</span></span>
+<span id="cb16-12"><a href="#cb16-12" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="fu">across</span>(<span class="fu">where</span>(is.character), as.factor))</span>
+<span id="cb16-13"><a href="#cb16-13" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb16-14"><a href="#cb16-14" aria-hidden="true" tabindex="-1"></a>trav[trav <span class="sc">==</span> <span class="sc">-</span><span class="dv">2</span> <span class="sc">|</span>trav <span class="sc">==</span> <span class="sc">-</span><span class="dv">20</span> <span class="sc">|</span> trav <span class="sc">==</span> <span class="st">"missing"</span>] <span class="ot">&lt;-</span> <span class="cn">NA</span></span>
+<span id="cb16-15"><a href="#cb16-15" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb16-16"><a href="#cb16-16" aria-hidden="true" tabindex="-1"></a>missing_counts <span class="ot">&lt;-</span> <span class="fu">colSums</span>(<span class="fu">is.na</span>(trav))</span>
+<span id="cb16-17"><a href="#cb16-17" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb16-18"><a href="#cb16-18" aria-hidden="true" tabindex="-1"></a><span class="co"># Display variables with missing values and their counts</span></span>
+<span id="cb16-19"><a href="#cb16-19" aria-hidden="true" tabindex="-1"></a>missing_counts[missing_counts <span class="sc">&gt;</span> <span class="dv">0</span>]</span>
+<span id="cb16-20"><a href="#cb16-20" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb16-21"><a href="#cb16-21" aria-hidden="true" tabindex="-1"></a><span class="co">#Zero values for the response</span></span>
+<span id="cb16-22"><a href="#cb16-22" aria-hidden="true" tabindex="-1"></a>per0resp <span class="ot">&lt;-</span> <span class="fu">sum</span>(trav<span class="sc">$</span>call_counts <span class="sc">==</span> <span class="dv">0</span>) <span class="sc">/</span> <span class="fu">nrow</span>(trav) <span class="sc">*</span> <span class="dv">100</span></span>
+<span id="cb16-23"><a href="#cb16-23" aria-hidden="true" tabindex="-1"></a>per0resp</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+</section>
+
+</main>
+<!-- /main column -->
+<script id="quarto-html-after-body" type="application/javascript">
+window.document.addEventListener("DOMContentLoaded", function (event) {
+  const toggleBodyColorMode = (bsSheetEl) => {
+    const mode = bsSheetEl.getAttribute("data-mode");
+    const bodyEl = window.document.querySelector("body");
+    if (mode === "dark") {
+      bodyEl.classList.add("quarto-dark");
+      bodyEl.classList.remove("quarto-light");
+    } else {
+      bodyEl.classList.add("quarto-light");
+      bodyEl.classList.remove("quarto-dark");
+    }
+  }
+  const toggleBodyColorPrimary = () => {
+    const bsSheetEl = window.document.querySelector("link#quarto-bootstrap");
+    if (bsSheetEl) {
+      toggleBodyColorMode(bsSheetEl);
+    }
+  }
+  toggleBodyColorPrimary();  
+  const icon = "";
+  const anchorJS = new window.AnchorJS();
+  anchorJS.options = {
+    placement: 'right',
+    icon: icon
+  };
+  anchorJS.add('.anchored');
+  const isCodeAnnotation = (el) => {
+    for (const clz of el.classList) {
+      if (clz.startsWith('code-annotation-')) {                     
+        return true;
+      }
+    }
+    return false;
+  }
+  const clipboard = new window.ClipboardJS('.code-copy-button', {
+    text: function(trigger) {
+      const codeEl = trigger.previousElementSibling.cloneNode(true);
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
+        }
+      }
+      return codeEl.innerText;
+    }
+  });
+  clipboard.on('success', function(e) {
+    // button target
+    const button = e.trigger;
+    // don't keep focus
+    button.blur();
+    // flash "checked"
+    button.classList.add('code-copy-button-checked');
+    var currentTitle = button.getAttribute("title");
+    button.setAttribute("title", "Copied!");
+    let tooltip;
+    if (window.bootstrap) {
+      button.setAttribute("data-bs-toggle", "tooltip");
+      button.setAttribute("data-bs-placement", "left");
+      button.setAttribute("data-bs-title", "Copied!");
+      tooltip = new bootstrap.Tooltip(button, 
+        { trigger: "manual", 
+          customClass: "code-copy-button-tooltip",
+          offset: [0, -8]});
+      tooltip.show();    
+    }
+    setTimeout(function() {
+      if (tooltip) {
+        tooltip.hide();
+        button.removeAttribute("data-bs-title");
+        button.removeAttribute("data-bs-toggle");
+        button.removeAttribute("data-bs-placement");
+      }
+      button.setAttribute("title", currentTitle);
+      button.classList.remove('code-copy-button-checked');
+    }, 1000);
+    // clear code selection
+    e.clearSelection();
+  });
+  function tippyHover(el, contentFn) {
+    const config = {
+      allowHTML: true,
+      content: contentFn,
+      maxWidth: 500,
+      delay: 100,
+      arrow: false,
+      appendTo: function(el) {
+          return el.parentElement;
+      },
+      interactive: true,
+      interactiveBorder: 10,
+      theme: 'quarto',
+      placement: 'bottom-start'
+    };
+    window.tippy(el, config); 
+  }
+  const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+  for (var i=0; i<noterefs.length; i++) {
+    const ref = noterefs[i];
+    tippyHover(ref, function() {
+      // use id or data attribute instead here
+      let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+      try { href = new URL(href).hash; } catch {}
+      const id = href.replace(/^#\/?/, "");
+      const note = window.document.getElementById(id);
+      return note.innerHTML;
+    });
+  }
+      let selectedAnnoteEl;
+      const selectorForAnnotation = ( cell, annotation) => {
+        let cellAttr = 'data-code-cell="' + cell + '"';
+        let lineAttr = 'data-code-annotation="' +  annotation + '"';
+        const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+        return selector;
+      }
+      const selectCodeLines = (annoteEl) => {
+        const doc = window.document;
+        const targetCell = annoteEl.getAttribute("data-target-cell");
+        const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+        const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+        const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+        const lineIds = lines.map((line) => {
+          return targetCell + "-" + line;
+        })
+        let top = null;
+        let height = null;
+        let parent = null;
+        if (lineIds.length > 0) {
+            //compute the position of the single el (top and bottom and make a div)
+            const el = window.document.getElementById(lineIds[0]);
+            top = el.offsetTop;
+            height = el.offsetHeight;
+            parent = el.parentElement.parentElement;
+          if (lineIds.length > 1) {
+            const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+            const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+            height = bottom - top;
+          }
+          if (top !== null && height !== null && parent !== null) {
+            // cook up a div (if necessary) and position it 
+            let div = window.document.getElementById("code-annotation-line-highlight");
+            if (div === null) {
+              div = window.document.createElement("div");
+              div.setAttribute("id", "code-annotation-line-highlight");
+              div.style.position = 'absolute';
+              parent.appendChild(div);
+            }
+            div.style.top = top - 2 + "px";
+            div.style.height = height + 4 + "px";
+            let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+            if (gutterDiv === null) {
+              gutterDiv = window.document.createElement("div");
+              gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+              gutterDiv.style.position = 'absolute';
+              const codeCell = window.document.getElementById(targetCell);
+              const gutter = codeCell.querySelector('.code-annotation-gutter');
+              gutter.appendChild(gutterDiv);
+            }
+            gutterDiv.style.top = top - 2 + "px";
+            gutterDiv.style.height = height + 4 + "px";
+          }
+          selectedAnnoteEl = annoteEl;
+        }
+      };
+      const unselectCodeLines = () => {
+        const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+        elementsIds.forEach((elId) => {
+          const div = window.document.getElementById(elId);
+          if (div) {
+            div.remove();
+          }
+        });
+        selectedAnnoteEl = undefined;
+      };
+      // Attach click handler to the DT
+      const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+      for (const annoteDlNode of annoteDls) {
+        annoteDlNode.addEventListener('click', (event) => {
+          const clickedEl = event.target;
+          if (clickedEl !== selectedAnnoteEl) {
+            unselectCodeLines();
+            const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+            if (activeEl) {
+              activeEl.classList.remove('code-annotation-active');
+            }
+            selectCodeLines(clickedEl);
+            clickedEl.classList.add('code-annotation-active');
+          } else {
+            // Unselect the line
+            unselectCodeLines();
+            clickedEl.classList.remove('code-annotation-active');
+          }
+        });
+      }
+  const findCites = (el) => {
+    const parentEl = el.parentElement;
+    if (parentEl) {
+      const cites = parentEl.dataset.cites;
+      if (cites) {
+        return {
+          el,
+          cites: cites.split(' ')
+        };
+      } else {
+        return findCites(el.parentElement)
+      }
+    } else {
+      return undefined;
+    }
+  };
+  var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+  for (var i=0; i<bibliorefs.length; i++) {
+    const ref = bibliorefs[i];
+    const citeInfo = findCites(ref);
+    if (citeInfo) {
+      tippyHover(citeInfo.el, function() {
+        var popup = window.document.createElement('div');
+        citeInfo.cites.forEach(function(cite) {
+          var citeDiv = window.document.createElement('div');
+          citeDiv.classList.add('hanging-indent');
+          citeDiv.classList.add('csl-entry');
+          var biblioDiv = window.document.getElementById('ref-' + cite);
+          if (biblioDiv) {
+            citeDiv.innerHTML = biblioDiv.innerHTML;
+          }
+          popup.appendChild(citeDiv);
+        });
+        return popup.innerHTML;
+      });
+    }
+  }
+});
+</script>
+</div> <!-- /content -->
+
+
+
+</body></html>
