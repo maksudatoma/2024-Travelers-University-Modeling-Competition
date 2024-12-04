@@ -91,7 +91,7 @@ This aligns with ANOVA results showing marginal significance, warranting further
 ## Model Comparison
 
 1.  **Gradient Boosting Machine (GBM)**
-    -   Test RMSE: 36.06
+    -   Test RMSE: 36.1614
     -   Key predictor: `X12m_call_history`
 2.  **Zero-Inflated Poisson (ZIP)**
     -   Test RMSE: 36.53
@@ -99,19 +99,45 @@ This aligns with ANOVA results showing marginal significance, warranting further
 
 ## Model Selection
 
-**Gradient Boosting Machine (GBM)** - Test RMSE: 36.06 - Best Performing Model - Parameter Tuning: Trial and Error - Challenge: Dataset was too large for hyperparameter tuning
+**Gradient Boosting Machine (GBM)**
 
-## Variable Selection and Model Evaluation
+-   Test RMSE: 36.1614
+
+-   Best Performing Model
+
+-   **Parameter Tuning**: Trial and Error
+
+-   **Challenge**: Dataset was too large for hyperparameter tuning
+
+## Variable Selection
 
 **Gradient Boosting Machine (GBM)**
 
--   An initial GBM was run with all the variables, and then a subset of 10 variables was selected from the variable importance plot, and another gbm model was run with those variables.
+![Fig-5: Variable Importance Plot](VariableImportance.png){width="80%"}
 
--   The model with the 10 variables (Test RMSE: Insert Here) performed comparably to the model with all variables (Test RMSE: Insert Here) included.
+-   An initial GBM was run with all the variables, and then a subset of 3 variables was selected from the variable importance plot, and another gbm model was run with those three variables.
 
--   The train RMSE was compared to the test RMSE to assess overfitting.
-    Both were close in value (insert value here).
+
+## Variable Selection
+
+![Fig-6: Variable Importance](var_imp_val.png){width="80%"}
+
+-   Most Important Variables: X12m_call_history, tenure_at_snapshot, and acq_method
+
+-   Test RMSE for Model with all variables: 36.1742
+
+-   Test RMSE for Model with 3 variables selected from Variable Importance Plot: 36.1614
+
+
+
+## Model Evaluation
+
+![Fig-6: Train and Test RMSE Curves](Test_Train.png){width="80%"}
+
+-   Train RMSE: 35.67179
+-   Test RMSE: 36.1742
 
 ## Concerns
 
 1.  The model is likely sub-optimal, as it struggled to achieve a good accuracy score (on the validation set) and the parameters were tuned through trial and error instead of using a grid search to find the optimal values.
+
