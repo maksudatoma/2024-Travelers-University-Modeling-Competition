@@ -150,6 +150,11 @@ This aligns with ANOVA results showing marginal significance, warranting further
 
 -   Test RMSE for Model with 3 variables selected from Variable Importance Plot: 36.1614
 
+-   Limitation: Variable importance does not specify the relationship between the predictors and call_counts 
+
+
+
+
 ## Model Evaluation
 
 ![Fig-6: Train and Test RMSE Curves](Test_Train.png){width="80%"}
@@ -160,3 +165,15 @@ This aligns with ANOVA results showing marginal significance, warranting further
 ## Concerns
 
 1.  The model is likely sub-optimal, as it struggled to achieve a good accuracy score (on the validation set) and the parameters were tuned through trial and error instead of using a grid search to find the optimal values.
+
+
+
+## Recommendations
+
+1. To improve the model's performance, we recommend using a grid search for hyperparameter optimization. This method systematically explores a range of parameter combinations to identify the optimal values, resulting in a more accurate and reliable model. With better computing power, implementing a grid search would be feasible and could significantly enhance the model's predictive capability.  
+
+
+
+
+
+
