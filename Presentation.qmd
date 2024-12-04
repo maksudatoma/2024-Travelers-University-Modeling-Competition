@@ -12,12 +12,37 @@ editor:
     wrap: sentence
 ---
 
-## Introduction
+## Business Problem
 
-The data obtained from Kaggle, is split into two parts: training data and validation data.
-In the validation data, the target variable, call_counts, is omitted.
-The training dataset contains 80,000 samples, and the validation dataset contains 20,000 samples.
-We will be mostly interested in `call_counts`, `12m_call_history`, `ann_prm_amt`, `newest_veh_age`, `home_lot_sq_footage`, `digital_contacts_ind`, `has_prior_carrier`and so on.
+-   **Problem**:CloverShield Insurance is facing high call center costs caused by inefficient resource allocation due to unpredictable policyholder call behavior.
+
+-   **Objective**: Reduce call center costs while maintaining operational efficiency.\
+
+-   **Challenge**: Forecast the number of calls policyholders are likely to make.\
+
+-   **Approach**: Develop a predictive model leveraging segmentation data.\
+
+-   **Outcome**: Enable optimized resource allocation and improved cost management.
+
+## Data Overview
+
+-   The data was compiled by our Business Intelligence department at CloverShield.
+
+-   Training Set: 80,000 records
+
+-   Test Set: 20,000 records
+
+## Distribution of `call_counts`
+
+![Fig-1: Call Counts Distribution](call_count.png){width="80%"}
+
+**Observations:**
+
+1\.
+This graph shows that call_count is rightly skewed.
+
+2\.
+About half (50.18%) of the customers did not make any calls.
 
 ## Data Cleaning and Missing Value count
 
@@ -37,12 +62,6 @@ This is significant and might suggest using models like Zero-Inflated Poisson (Z
 The dataset contains both numeric and categorical variables, with some columns having significant missing values.
 - The target variable (call_counts) is heavily zero-inflated and skewed, which may require specialized modeling approaches.
 - Some numeric variables, like ann_prm_amt and home_lot_sq_footage, have wide ranges and outliers, suggesting that data transformation or scaling may be beneficial.
-
-## Distribution of `call_counts`
-
-![Fig-1: Call Counts Distribution](call_count.png){width="80%"}
-
-This graph shows that the response variable is rightly skewed.
 
 ## Missing Data Summary
 
@@ -81,21 +100,25 @@ This aligns with ANOVA results showing marginal significance, warranting further
 
 ## Models
 
-| **Models**                     | **Status** |
-|--------------------------------|------------|
-| Gradient Boosted Machine (GBM) | Tried      |
-| Zero Inflated Poission (ZIP)   | Tried      |
-| Hurdle                         | Considered |
-| Two Part Model                 | Considered |
+| **Models**                             | **Status** |
+|----------------------------------------|------------|
+| Gradient Boosted Machine (GBM)         | Tried      |
+| Zero Inflated Poission (ZIP)           | Tried      |
+| Zero Inflated Negative Binomial (ZINB) | Tried      |
+| Random Forest                          | Tried      |
+| Hurdle                                | Considered |
+| Two-Part Model                         | Considered |
 
 ## Model Comparison
 
 1.  **Gradient Boosting Machine (GBM)**
     -   Test RMSE: 36.1614
-    -   Key predictor: `X12m_call_history`
-2.  **Zero-Inflated Poisson (ZIP)**
-    -   Test RMSE: 36.53
-    -   Suitable for zero-inflated data.
+2.  **Random Forest**
+    -   Test RMSE: 36.30212
+3.  **Zero-Inflated Poisson (ZIP)**
+    -   Test RMSE: 36.61514
+4.  **Zero-Inflated Negative Binomial (ZINB)**
+    -   Test RMSE: 36.85568
 
 ## Model Selection
 
@@ -117,7 +140,6 @@ This aligns with ANOVA results showing marginal significance, warranting further
 
 -   An initial GBM was run with all the variables, and then a subset of 3 variables was selected from the variable importance plot, and another gbm model was run with those three variables.
 
-
 ## Variable Selection
 
 ![Fig-6: Variable Importance](var_imp_val.png){width="80%"}
@@ -127,8 +149,6 @@ This aligns with ANOVA results showing marginal significance, warranting further
 -   Test RMSE for Model with all variables: 36.1742
 
 -   Test RMSE for Model with 3 variables selected from Variable Importance Plot: 36.1614
-
-
 
 ## Model Evaluation
 
@@ -140,4 +160,3 @@ This aligns with ANOVA results showing marginal significance, warranting further
 ## Concerns
 
 1.  The model is likely sub-optimal, as it struggled to achieve a good accuracy score (on the validation set) and the parameters were tuned through trial and error instead of using a grid search to find the optimal values.
-
