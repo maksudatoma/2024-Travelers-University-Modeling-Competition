@@ -1,0 +1,402 @@
+---
+title: "Untitled"
+format: html
+editor: visual
+---
+
+## Quarto
+
+Quarto enables you to weave together content and executable code into a finished document. To learn more about Quarto see <https://quarto.org>.
+
+## Running Code
+
+When you click the **Render** button a document will be generated that includes both content and the output of embedded code. You can embed code like this:
+
+```{r}
+# Load necessary libraries
+library(caret)
+library(dplyr)
+
+library(readr)
+train_data<- read.csv("train_data.csv")
+valid_data <- read_csv("test_data.csv")
+
+# Inspect the datasets
+str(train_data)
+str(valid_data)
+summary(train_data)
+
+```
+
+You can add options to executable code like this
+##Process the training data
+```{r}
+#| echo: false
+# Impute missing values with mean for numeric columns
+train_data[is.na(train_data)] <- lapply(train_data, function(x) ifelse(is.numeric(x), mean(x, na.rm = TRUE), x))
+
+```
+
+##Base model
+```{r}
+#| echo: false
+library(corrplot)
+library(caret)
+library(randomForest)
+library(dplyr)
+
+# Define target variable
+target <- "call_counts"
+rf_model <- train(as.formula(paste(target, "~ .")), data = train_data, method = "rf", trControl = trainControl(method = "none"))
+
+
+# Train the base models
+# Random Forest
+rf_model <- train(as.formula(paste(target, "~ .")), data = train_data, method = "rf", trControl = trainControl(method = "cv", number = 5))
+
+# Gradient Boosting Machine
+gbm_model <- train(as.formula(paste(target, "~ .")), data = train_data, method = "gbm", trControl = trainControl(method = "cv", number = 5), verbose = FALSE)
+
+# Linear Model
+lm_model <- train(as.formula(paste(target, "~ .")), data = train_data, method = "lm", trControl = trainControl(method = "cv", number = 5))
+
+```
+
+
+```{r}
+#| echo: false
+
+library(caret)
+library(gbm)
+library(nnet)
+
+```
+##GBM
+
+```{r}
+#| echo: false
+set.seed(123)
+gbm_model <- train(
+  call_counts ~ . - channel - trm_len_mo - household_group - product_sbtyp,
+  data = train_data,
+  method = "gbm",
+  trControl = trainControl(method = "repeatedcv", number = 5, repeats = 3),
+  tuneGrid = expand.grid(
+    n.trees = c(50, 100, 150),   # Number of boosting iterations
+    interaction.depth = c(1, 3, 5),  # Depth of each tree
+    shrinkage = c(0.01, 0.1, 0.3),   # Learning rate
+    n.minobsinnode = 10              # Minimum number of observations in terminal nodes
+  ),
+  metric = "RMSE",
+  verbose = FALSE
+)
+
+# Print summary
+print(gbm_model)
+
+```
+
+#RF
+```{r}
+#| echo: false
+set.seed(123)
+rf_model <- train(
+  call_counts ~ . - channel - trm_len_mo - household_group - product_sbtyp,
+  data = train_data,
+  method = "rf",
+  trControl = trainControl(method = "repeatedcv", number = 5, repeats = 3),
+  tuneGrid = expand.grid(
+    mtry = c(2, 3, 4)  # Number of variables randomly sampled as candidates at each split
+  ),
+  ntree = 100,  # Number of trees in the forest
+  metric = "RMSE",
+  importance = TRUE
+)
+
+# Print summary
+print(rf_model)
+
+```
+
+##NN
+```{r}
+#| echo: false
+set.seed(123)
+nn_model <- train(
+  call_counts ~ . - channel - trm_len_mo - household_group - product_sbtyp,
+  data = train_data,
+  method = "nnet",
+  trControl = trainControl(method = "repeatedcv", number = 5, repeats = 3),
+  tuneGrid = expand.grid(
+    size = c(3, 5, 7),  # Number of neurons in the hidden layer
+    decay = c(0.01, 0.1, 0.5)  # Regularization parameter to prevent overfitting
+  ),
+  metric = "RMSE",
+  linout = TRUE,    # For regression; use 'FALSE' for classification
+  trace = FALSE
+)
+
+# Print summary
+print(nn_model)
+
+```
+
+```{r}
+#| echo: false
+# Predict with GBM
+prds_gbm <- predict(gbm_model, newdata = test_data)
+
+# Predict with Random Forest
+prds_rf <- predict(rf_model, newdata = test_data)
+
+# Predict with Neural Network
+prds_nn <- predict(nn_model, newdata = test_data)
+
+```
+```{r}
+#| echo: false
+
+```
+
+
+#MISS-rANDOM
+```{r}
+
+```
+
+
+
+```{r}
+#| echo: false
+# Load necessary libraries
+library(randomForest)
+
+# Define a function to calculate the mode for categorical data
+mode_impute <- function(x) {
+  unique_x <- unique(na.omit(x))
+  unique_x[which.max(tabulate(match(x, unique_x)))]
+}
+
+# Define the function for iterative random forest imputation
+impute_missing_rf <- function(X, max_iter = 10, tol = 1e-4) {
+  # X: n × p matrix or data frame with missing values
+  # max_iter: maximum number of iterations
+  # tol: tolerance for convergence (stopping criterion)
+
+  # Step 1: Initial guess for missing values
+  Ximp <- X
+  for (j in 1:ncol(Ximp)) {
+    if (is.numeric(Ximp[, j])) {
+      # For numeric columns, use mean imputation initially
+      Ximp[is.na(Ximp[, j]), j] <- mean(Ximp[, j], na.rm = TRUE)
+    } else {
+      # For categorical columns, use mode imputation initially
+      Ximp[is.na(Ximp[, j]), j] <- mode_impute(Ximp[, j])
+    }
+  }
+  
+  # Step 2: Sort columns by increasing amount of missing values
+  missing_counts <- colSums(is.na(X))
+  column_order <- order(missing_counts)
+
+  iter <- 0
+  converged <- FALSE
+  while (iter < max_iter && !converged) {
+    # Store the previously imputed matrix (numeric columns only for difference calculation)
+    Ximp_old <- Ximp
+    numeric_Ximp_old <- as.matrix(Ximp_old[, sapply(Ximp_old, is.numeric)])
+
+    # Step 3: Iterate over columns sorted by missing values
+    for (s in column_order) {
+      if (missing_counts[s] == 0 || !is.numeric(Ximp[, s])) next  # Skip columns with no missing values or non-numeric columns
+
+      # Step 4: Split observed and missing parts of the column
+      y_obs <- Ximp[!is.na(X[, s]), s]
+      x_obs <- Ximp[!is.na(X[, s]), -s]  # All other columns without missing values in row
+      x_mis <- Ximp[is.na(X[, s]), -s]   # Rows with missing values in column s
+
+      # Ensure only numeric columns are used in the model
+      x_obs <- x_obs[, sapply(x_obs, is.numeric)]
+      x_mis <- x_mis[, sapply(x_mis, is.numeric)]
+
+      # Step 5: Train a random forest on observed data
+      rf_model <- randomForest(x_obs, y_obs, ntree = 100)
+
+      # Step 6: Predict missing values using the trained model
+      y_pred <- predict(rf_model, newdata = x_mis)
+
+      # Step 7: Update the imputed matrix with predicted values
+      Ximp[is.na(X[, s]), s] <- y_pred
+    }
+
+    # Step 8: Check for convergence (only numeric columns in difference calculation)
+    numeric_Ximp_new <- as.matrix(Ximp[, sapply(Ximp, is.numeric)])
+    diff <- sum((numeric_Ximp_new - numeric_Ximp_old)^2) / sum(numeric_Ximp_old^2)
+    converged <- diff < tol
+    iter <- iter + 1
+    cat("Iteration:", iter, " - Difference:", diff, "\n")
+  }
+
+  return(Ximp)
+}
+
+# Example usage
+# Assuming 'train_data' is your dataset with missing values
+imputed_train_data <- impute_missing_rf(train_data)
+print(imputed_train_data)
+
+
+write.csv(imputed_train_data, "imputed_train_data.csv", row.names = FALSE)
+
+```
+
+#RF
+```{r}
+#| echo: false
+library(readr)
+imputed_train_data<- read.csv("imputed_train_data.csv")
+
+library(caret)
+library(randomForest)
+library(gbm)
+library(nnet)
+
+
+set.seed(123)
+rf_model <- train(
+  call_counts ~ ., 
+  data = imputed_train_data,
+  method = "rf",
+  trControl = trainControl(method = "repeatedcv", number = 5, repeats = 3),
+  tuneGrid = expand.grid(mtry = c(2, 3, 4)),
+  metric = "RMSE", 
+  importance = TRUE
+)
+
+# Display summary of Random Forest model
+print(rf_model)
+
+```
+# 14 November
+## GLM
+```{r}
+#| echo: false
+# Load necessary library
+library(caret)
+
+# Define the target variable and train a GLM model with Poisson distribution
+set.seed(123)
+glm_poisson <- train(
+  call_counts ~ ., 
+  data = imputed_train_data,  # Use the imputed training dataset
+  method = "glm",
+  family = poisson(link = "log"),  # Poisson distribution with log link
+  trControl = trainControl(method = "cv", number = 5)  # Cross-validation
+)
+
+# Make predictions on the test dataset
+test_data$call_counts <- predict(glm_poisson, newdata = test_data)
+
+# Prepare the submission file
+# Assuming "ID" is the identifier column in your test dataset and submission format
+submission <- data.frame(ID = test_data$ID, call_counts = test_data$call_counts)
+
+# Save to CSV
+write.csv(submission, "submission.csv", row.names = FALSE)
+
+```
+
+##GBM
+```{r}
+# Load necessary libraries
+library(gbm)
+
+# Train a GBM model
+set.seed(123)
+gbm_model <- train(
+  call_counts ~ ., 
+  data = imputed_train_data,
+  method = "gbm",
+  trControl = trainControl(method = "repeatedcv", number = 5, repeats = 3),
+  tuneGrid = expand.grid(
+    n.trees = c(50, 100, 150),
+    interaction.depth = c(1, 3, 5),
+    shrinkage = c(0.01, 0.1),
+    n.minobsinnode = 10
+  ),
+  metric = "RMSE",
+  verbose = FALSE
+)
+
+# Make predictions on the test dataset
+test_data$call_counts <- predict(gbm_model, newdata = test_data)
+
+# Prepare the submission file
+submission <- data.frame(ID = test_data$ID, call_counts = test_data$call_counts)
+write.csv(submission, "submission.csv", row.names = FALSE)
+
+```
+
+
+
+```{r}
+# Check for columns in train data that are not in test data
+missing_cols <- setdiff(names(imputed_train_data), names(test_data))
+
+# Add missing columns to test_data with placeholder values (e.g., 0 or column mean)
+for (col in missing_cols) {
+  if (is.numeric(imputed_train_data[[col]])) {
+    # Use mean or 0 for numeric columns
+    test_data[[col]] <- mean(imputed_train_data[[col]], na.rm = TRUE)
+  } else {
+    # Use a placeholder value for categorical columns (e.g., most common category)
+    test_data[[col]] <- mode(imputed_train_data[[col]])
+  }
+}
+
+# Make predictions on the test dataset with the GLM model
+test_data$call_counts <- predict(glm_poisson, newdata = test_data)
+
+# Prepare the submission file
+# Assuming "ID" is the identifier column in your test dataset and submission format
+submission_1 <- data.frame(id = test_data$id, Predict = test_data$call_counts)
+
+# Save to CSV
+write.csv(submission_1, "submission_1.csv", row.names = FALSE)
+
+```
+
+```{r}
+names(test_data)
+head(submission_1)
+nrow(submission_1)
+
+```
+
+
+```{r}
+#| echo: false
+
+```
+
+```{r}
+#| echo: false
+
+```
+
+```{r}
+#| echo: false
+
+```
+
+```{r}
+#| echo: false
+
+```
+
+
+
+```{r}
+#| echo: false
+
+```

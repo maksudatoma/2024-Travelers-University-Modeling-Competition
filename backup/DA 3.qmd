@@ -1,0 +1,134 @@
+---
+title: "Data Analysis 3"
+authors: 
+  Maksuda Aktar Toma,
+  Jo Charbonneau,
+  Ryan Lalicker
+date: today
+date-format: long
+execute: 
+  echo: false
+  warning: false
+columns: 2
+format:
+  pdf: 
+    extensions-dir: quarto-wordcount/_extensions/wordcount
+    fig-align: center
+    fig-width: 6
+    fig-height: 4
+bibliography: references.bib
+editor: 
+  markdown: 
+    wrap: sentence
+---
+
+```{r, , fig.pos="H"}
+#| label: data-setup
+#| echo: false
+#| eval: true
+
+library(knitr)
+library(dplyr)
+library(ggplot2)
+```
+
+```{r, , fig.pos="H"}
+#| label: Scratch work
+#| echo: false
+#| eval: false
+
+```
+
+# Introduction
+
+
+The data set, `data.csv`, and all other files used in this project can be found on our [Github page](https://github.com/RyanLalicker/Data-Analysis-2-STAT-325-825) which can be found at https://github.com/RyanLalicker/Data-Analysis-2-STAT-325-825.
+
+# Exploring the Data
+
+## Variables
+
+Columns in data set can be typed like `column`.
+
+### POTENTIAL Changes made to the variables in the original data set
+
+## Summary Statistics
+
+
+```{r, , fig.pos="H"}
+#| label: fig-summarystats
+#| echo: false
+#| eval: true
+
+
+```
+
+
+```{r, , fig.pos="H"}
+#| label: fig-normallity
+#| echo: false
+#| eval: true
+#| layout-ncol: 2
+#| fig-cap: ""
+#| fig-subcap: 
+#|  - ""
+#|  - ""
+#| fig-width: 6
+#| fig-height: 4
+
+```
+
+## Relationships among variables
+
+# Potential models
+
+
+## Model 1
+
+
+
+$$
+y_{ijklmn} = ENTER-MODEL-HERE
+$$
+
+where $y_{ijklm}$ represents the *dependent variable*, ...
+
+![Picture of SAS Output](filename.png){width="3in"}
+
+# Conclusion
+
+# Recomendation
+
+\newpage
+
+# References
+
+::: {#refs}
+:::
+
+\newpage
+
+# Appendix A - R Code
+
+```{r, , fig.pos="H"}
+#| label: appendix A
+#| echo: true
+#| eval: false
+
+```
+
+\newpage
+
+# Appendix B - SAS Code
+
+``` sas
+
+```
+
+\newpage
+
+# Appendix C - Additional SAS Output
+
+
+
+![](filename.png)
