@@ -1,0 +1,295 @@
+% Options for packages loaded elsewhere
+\PassOptionsToPackage{unicode}{hyperref}
+\PassOptionsToPackage{hyphens}{url}
+\PassOptionsToPackage{dvipsnames,svgnames,x11names}{xcolor}
+%
+\documentclass[
+  10pt,
+  letterpaper,
+  twocolumn]{article}
+
+\usepackage{amsmath,amssymb}
+\usepackage{iftex}
+\ifPDFTeX
+  \usepackage[T1]{fontenc}
+  \usepackage[utf8]{inputenc}
+  \usepackage{textcomp} % provide euro and other symbols
+\else % if luatex or xetex
+  \usepackage{unicode-math}
+  \defaultfontfeatures{Scale=MatchLowercase}
+  \defaultfontfeatures[\rmfamily]{Ligatures=TeX,Scale=1}
+\fi
+\usepackage{lmodern}
+\ifPDFTeX\else  
+    % xetex/luatex font selection
+  \setmainfont[]{Times New Roman}
+\fi
+% Use upquote if available, for straight quotes in verbatim environments
+\IfFileExists{upquote.sty}{\usepackage{upquote}}{}
+\IfFileExists{microtype.sty}{% use microtype if available
+  \usepackage[]{microtype}
+  \UseMicrotypeSet[protrusion]{basicmath} % disable protrusion for tt fonts
+}{}
+\makeatletter
+\@ifundefined{KOMAClassName}{% if non-KOMA class
+  \IfFileExists{parskip.sty}{%
+    \usepackage{parskip}
+  }{% else
+    \setlength{\parindent}{0pt}
+    \setlength{\parskip}{6pt plus 2pt minus 1pt}}
+}{% if KOMA class
+  \KOMAoptions{parskip=half}}
+\makeatother
+\usepackage{xcolor}
+\setlength{\emergencystretch}{3em} % prevent overfull lines
+\setcounter{secnumdepth}{-\maxdimen} % remove section numbering
+% Make \paragraph and \subparagraph free-standing
+\ifx\paragraph\undefined\else
+  \let\oldparagraph\paragraph
+  \renewcommand{\paragraph}[1]{\oldparagraph{#1}\mbox{}}
+\fi
+\ifx\subparagraph\undefined\else
+  \let\oldsubparagraph\subparagraph
+  \renewcommand{\subparagraph}[1]{\oldsubparagraph{#1}\mbox{}}
+\fi
+
+
+\providecommand{\tightlist}{%
+  \setlength{\itemsep}{0pt}\setlength{\parskip}{0pt}}\usepackage{longtable,booktabs,array}
+\usepackage{calc} % for calculating minipage widths
+% Correct order of tables after \paragraph or \subparagraph
+\usepackage{etoolbox}
+\makeatletter
+\patchcmd\longtable{\par}{\if@noskipsec\mbox{}\fi\par}{}{}
+\makeatother
+% Allow footnotes in longtable head/foot
+\IfFileExists{footnotehyper.sty}{\usepackage{footnotehyper}}{\usepackage{footnote}}
+\makesavenoteenv{longtable}
+\usepackage{graphicx}
+\makeatletter
+\def\maxwidth{\ifdim\Gin@nat@width>\linewidth\linewidth\else\Gin@nat@width\fi}
+\def\maxheight{\ifdim\Gin@nat@height>\textheight\textheight\else\Gin@nat@height\fi}
+\makeatother
+% Scale images if necessary, so that they will not overflow the page
+% margins by default, and it is still possible to overwrite the defaults
+% using explicit options in \includegraphics[width, height, ...]{}
+\setkeys{Gin}{width=\maxwidth,height=\maxheight,keepaspectratio}
+% Set default figure placement to htbp
+\makeatletter
+\def\fps@figure{htbp}
+\makeatother
+
+\usepackage{sdss2020} % Uses Times Roman font (either newtx or times package)
+\usepackage{url}
+\usepackage{hyperref}
+\usepackage{latexsym}
+\usepackage{amsmath, amsthm, amsfonts}
+\usepackage{algorithm, algorithmic}
+\usepackage[dvipsnames]{xcolor} % colors
+\newcommand{\mt}[1]{{\textcolor{blue}{#1}}}
+\newcommand{\svp}[1]{{\textcolor{RedOrange}{#1}}}
+\makeatletter
+\makeatother
+\makeatletter
+\makeatother
+\makeatletter
+\@ifpackageloaded{caption}{}{\usepackage{caption}}
+\AtBeginDocument{%
+\ifdefined\contentsname
+  \renewcommand*\contentsname{Table of contents}
+\else
+  \newcommand\contentsname{Table of contents}
+\fi
+\ifdefined\listfigurename
+  \renewcommand*\listfigurename{List of Figures}
+\else
+  \newcommand\listfigurename{List of Figures}
+\fi
+\ifdefined\listtablename
+  \renewcommand*\listtablename{List of Tables}
+\else
+  \newcommand\listtablename{List of Tables}
+\fi
+\ifdefined\figurename
+  \renewcommand*\figurename{Figure}
+\else
+  \newcommand\figurename{Figure}
+\fi
+\ifdefined\tablename
+  \renewcommand*\tablename{Table}
+\else
+  \newcommand\tablename{Table}
+\fi
+}
+\@ifpackageloaded{float}{}{\usepackage{float}}
+\floatstyle{ruled}
+\@ifundefined{c@chapter}{\newfloat{codelisting}{h}{lop}}{\newfloat{codelisting}{h}{lop}[chapter]}
+\floatname{codelisting}{Listing}
+\newcommand*\listoflistings{\listof{codelisting}{List of Listings}}
+\makeatother
+\makeatletter
+\@ifpackageloaded{caption}{}{\usepackage{caption}}
+\@ifpackageloaded{subcaption}{}{\usepackage{subcaption}}
+\makeatother
+\makeatletter
+\@ifpackageloaded{tcolorbox}{}{\usepackage[skins,breakable]{tcolorbox}}
+\makeatother
+\makeatletter
+\@ifundefined{shadecolor}{\definecolor{shadecolor}{rgb}{.97, .97, .97}}
+\makeatother
+\makeatletter
+\makeatother
+\makeatletter
+\makeatother
+\ifLuaTeX
+  \usepackage{selnolig}  % disable illegal ligatures
+\fi
+\IfFileExists{bookmark.sty}{\usepackage{bookmark}}{\usepackage{hyperref}}
+\IfFileExists{xurl.sty}{\usepackage{xurl}}{} % add URL line breaks if available
+\urlstyle{same} % disable monospaced font for URLs
+\hypersetup{
+  pdftitle={Final Report},
+  pdfauthor={Maksuda Aktar Toma; Aarif Baksh},
+  colorlinks=true,
+  linkcolor={blue},
+  filecolor={Maroon},
+  citecolor={Blue},
+  urlcolor={Blue},
+  pdfcreator={LaTeX via pandoc}}
+
+\title{Final Report}
+\author{
+Maksuda Aktar Toma\\
+Statistics Department, University of Nebraska, Lincoln\\
+{\tt \href{mailto:mtoma2@huskers.unl.edu}{mtoma2@huskers.unl.edu}}\\
+\\\And
+Aarif Baksh\\
+Statistics Department, University of Nebraska, Lincoln\\
+{\tt \href{mailto:abaksh2@unl.edu}{abaksh2@unl.edu}}\\
+}
+\date{}
+
+\begin{document}
+\maketitle
+\ifdefined\Shaded\renewenvironment{Shaded}{\begin{tcolorbox}[enhanced, borderline west={3pt}{0pt}{shadecolor}, frame hidden, interior hidden, sharp corners, breakable, boxrule=0pt]}{\end{tcolorbox}}\fi
+
+\hypertarget{business-problem}{%
+\subsection{Business Problem}\label{business-problem}}
+
+As an employee of CloverShield Insurance company, you are tasked with
+addressing the challenge of reducing call center costs. Your business
+partners have requested the development of a predictive model that,
+based on the provided segmentation, forecasts the number of times a
+policyholder is likely to call. This model aims to optimize resource
+allocation and enhance cost-efficiency in call center operations.
+
+To find all our works on this project go to this link
+\url{https://github.com/maksudatoma/2024-Travelers-University-Modeling-Competition/tree/main}
+
+\hypertarget{introduction}{%
+\subsection{Introduction}\label{introduction}}
+
+The data obtained from Kaggle, is split into two parts: training data
+and validation data. In the validation data, the target variable,
+call\_counts, is omitted. The training dataset contains 80,000 samples,
+and the validation dataset contains 20,000 samples.
+
+\textbf{Variable Descriptions}
+
+\begin{itemize}
+\item
+  \texttt{ann\_prm\_amt}: Annualized Premium Amount
+\item
+  \texttt{bi\_limit\_group}: Body injury limit group (SP stands for
+  single split limit coverage, CSL stands for combined single limit
+  coverage)
+\item
+  \texttt{channel}: Distribution channel
+\item
+  \texttt{newest\_veh\_age}: The age of the newest vehicle insured on a
+  policy (-20 represents non-auto or missing values)
+\item
+  \texttt{geo\_group}: Indicates if the policyholder lives in a rural,
+  urban, or suburban area
+\item
+  \texttt{has\_prior\_carrier}: Did the policyholder come from another
+  carrier
+\item
+  \texttt{home\_lot\_sq\_footage}: Square footage of the policyholder's
+  home lot
+\item
+  \texttt{household\_group}: The types of policy in household
+\item
+  \texttt{household\_policy\_counts}: Number of policies in the
+  household
+\item
+  \texttt{telematics\_ind}: Telematic indicator (0 represents auto
+  missing values or didn't enroll and -2 represents non-auto)
+\item
+  \texttt{digital\_contacts\_ind}: An indicator to denote if the policy
+  holder has opted into digital communication
+\item
+  \texttt{12m\_call\_history}: Past one year call count
+\item
+  \texttt{tenure\_at\_snapshot}:Policy active length in month
+\item
+  \texttt{pay\_type\_code}: Code indicating the payment method
+\item
+  \texttt{acq\_method}:The acquisition method (Miss represents missing
+  values)
+\item
+  \texttt{trm\_len\_mo}: Term length month
+\item
+  \texttt{pol\_edeliv\_ind}: An indicator for email delivery of
+  documents (-2 represents missing values)
+\item
+  \texttt{aproduct\_sbtyp\_grp}: Product subtype group
+\item
+  \texttt{product\_sbtyp}: Product subtype
+\item
+  \texttt{call\_counts}: The number of call count generated by each
+  policy (target variable)
+\end{itemize}
+
+\hypertarget{data-cleaning-and-missing-value-count}{%
+\subsection{Data Cleaning and Missing Value
+count}\label{data-cleaning-and-missing-value-count}}
+
+First, we prepares the data by cleaning and transforming it (e.g.,
+converting characters to factors, marking missing values.)
+
+\begin{longtable}[]{@{}ll@{}}
+\caption{\textbf{Table 1: Variables with Missing Values}}\tabularnewline
+\toprule\noalign{}
+Variable & Number of missing values \\
+\midrule\noalign{}
+\endfirsthead
+\toprule\noalign{}
+Variable & Number of missing values \\
+\midrule\noalign{}
+\endhead
+\bottomrule\noalign{}
+\endlastfoot
+acq\_method & 16,066 \\
+newest\_veh\_age & 58,015 \\
+pol\_edeliv\_ind & 838 \\
+telematics\_ind & 58,015 \\
+\end{longtable}
+
+\textbf{Zero Values:} 50.18\% of the rows in the call\_counts column are
+zeros, indicating that most customers made no calls. This is significant
+and might suggest using models like Zero-Inflated Poisson (ZIP) to
+handle the high frequency of zeros.
+
+\textbf{Key Takeaways} - The dataset contains both numeric and
+categorical variables, with some columns having significant missing
+values. - The target variable (call\_counts) is heavily zero-inflated
+and skewed, which may require specialized modeling approaches. - Some
+numeric variables, like ann\_prm\_amt and home\_lot\_sq\_footage, have
+wide ranges and outliers, suggesting that data transformation or scaling
+may be beneficial.
+
+
+\bibliographystyle{sdss2020} % Please do not change the bibliography style
+
+\end{document}
