@@ -1,4 +1,3 @@
-
 ---
 title: "Final Report"
 format:
@@ -41,7 +40,6 @@ bibliography: refs.bib
 filters:
   - latex-environment
 commands: [mt, svp]
-
 ---
 
 ## Business Problem
@@ -112,3 +110,21 @@ First, we prepares the data by cleaning and transforming it (e.g., converting ch
 **Zero Values:** 50.18% of the rows in the call_counts column are zeros, indicating that most customers made no calls. This is significant and might suggest using models like Zero-Inflated Poisson (ZIP) to handle the high frequency of zeros.
 
 **Key Takeaways** - The dataset contains both numeric and categorical variables, with some columns having significant missing values. - The target variable (call_counts) is heavily zero-inflated and skewed, which may require specialized modeling approaches. - Some numeric variables, like ann_prm_amt and home_lot_sq_footage, have wide ranges and outliers, suggesting that data transformation or scaling may be beneficial.
+
+## Data Preprocessing
+
+### Recoding
+
+### Imputation
+
+Missing values in the dataset were imputed using the **Multivariate Imputation by Chained Equations (MICE)** package in R. MICE generates "plausible" synthetic values for incomplete columns based on the relationships with other variables in the dataset. The imputation process uses a Markov Chain Monte Carlo (MCMC) approach, specifically a technique known as **Gibbs sampling**, which iteratively updates missing values by sampling from conditional distributions of the observed data.
+
+In this dataset, **four variables** contain missing values: `acq_method`, `newest_veh_age`, `pol_edeliv_ind`, and `telematics_ind`. Each variable was imputed using methods appropriate for its type:
+
+1.  **`acq_method`**: A **nominal variable** with four categories. Missing values were imputed using **polytomous logistic regression** (`polyreg`), which is designed for categorical variables with more than two levels.\
+2.  **`newest_veh_age`**: A **numeric variable**. Missing values were imputed using **Predictive Mean Matching** (`pmm`), which ensures imputed values are plausible by selecting observed values close to the predicted mean.\
+3.  **`pol_edeliv_ind`** and **`telematics_ind`**: Both are **binary variables**. Missing values were imputed using **logistic regression** (`logreg`), which models binary outcomes effectively.
+
+## Exploratory Data Analysis
+
+## Results
