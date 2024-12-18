@@ -102,9 +102,9 @@ The violin plot shows the distribution of call_counts across different acquisiti
 
 **3.1 Model Selection and Hyperparameter Tuning**
 
-An initial GBM model was built using all predictors and one-thrid of the data in the training dataset. Since call_counts is a count variable the Poisson distribution was used. Repeated cross-validation was implemented through `trainControl`, using 5-fold cross-validation repeated 3 times and the model performance was measured using **Root Mean Square Error (RMSE)**. A grid search for hyperparameter tuning was conducted using `tuneGrid`, varying the number of trees (`n.trees`) from 100 to 1500 in increments of 100 and the learning rate (`shrinkage`) from 0.01 to 0.10 in increments of 0.01. Additionally, the `interaction.depth` was tuned between 2 and 10, and the **minimum number of observations in terminal nodes** (`n.minobsinnode`) was adjusted between 10 and 100. The parameter `bag.fraction` was set to 1, ensuring that all data were used in each boosting iteration.
+An initial GBM model was built using all predictors and one-thrid of the data in the training dataset. Since call_counts is a count variable the Poisson distribution was used. Repeated cross-validation was implemented through `trainControl`, using 5-fold cross-validation repeated 3 times and the model performance was measured using **Root Mean Square Error (RMSE)**. A grid search for hyperparameter tuning was conducted using `tuneGrid`, varying the number of trees (`n.trees`) from 1000 to 1500 in increments of 100 and the learning rate (`shrinkage`) from 0.01 to 0.10 in increments of 0.01. Additionally, the `interaction.depth` was tuned between 2 and 10, and the **minimum number of observations in terminal nodes** (`n.minobsinnode`) was adjusted between 10 and 50. The parameter `bag.fraction` was set to 1, ensuring that all data were used in each boosting iteration.
 
-The parameters for this model that resulted in the lowest RMSE (RMSE = 36.1742) were determined to be `n.trees`= 1000, `shrinkage`= 0.02, `interaction.depth` = 7 and `n.minobsinnode`= 20.
+The parameters for this model that resulted in the lowest RMSE (RMSE = 36.1742) were `n.trees`= 1100, `shrinkage`= 0.03, `interaction.depth` = 7 and `n.minobsinnode`= 30.
 
 ![*Important Variable*](VariableImportance.png){width="50%"}
 
@@ -116,9 +116,22 @@ The results revealed that 12-month call history (12m_call_history) is the most s
 
 Variables such as pay_type_code (0.11) and digital_contact_ind (0.04) showed minimal importance, contributing little to the model's predictive power. Other variables, including product_sbtyp, telematics_ind, and trm_len_mo, had importance scores of 0.00, indicating no measurable influence on call volume predictions. It is important to note that variable importance scores do not provide information on the direction or nature of the relationships (linear or nonlinear) between predictors and the target variable. Additionally, variables with zero importance may still play indirect roles or contribute to interactions with other predictors.
 
-To simplify the model, Gradient Boosted Machines (GBMs) were built using the top 3 to top 10 variables identified from the variable importance plot. Among these, the model utilizing only the top three variables---**12m_call_history**, **tenure_at_snapshot**, and **acq_method**---achieved the lowest test RMSE (RMSE = 36.1614) within this group. This result not only highlights the predictive strength of these three variables but also justifies the selection of a smaller, more interpretable model without sacrificing accuracy.
+**3.1.1 Gradient Boosted Machines (GBM) and Random Forests**
 
-\[I HAVE TO ADD THE DETAILS OF THE OTHER GBM, ZIP, ZINB and RANDOM FOREST HERE\]
+Gradient Boosted Machines (GBMs) and Random Forests were trained using the top 3 to top 10 variables identified from the variable importance plot, applied to another one-third of the dataset. Among these models, the GBM and Random Forest trained with only the top three variables—**12m_call_history**, **tenure_at_snapshot**, and **acq_method**—achieved the lowest test RMSE values. Specifically, the GBM recorded an RMSE of 36.1614, while the Random Forest yielded an RMSE of 36.30212. 
+
+For the GBM, the best-performing model was identified through cross-validation and used the parameters: `n.trees` = 1200, `shrinkage` = 0.02, `interaction.depth` = 2, and `n.minobsinnode` = 20. Similarly, the optimal Random Forest model, also selected using cross-validation, was configured with `n.trees` = 50 and `nodesize` = 20.
+
+
+
+**3.1.1 Zero-Inflated Poisson (ZIP) and Zero-Inflated Negative Binomial (ZINB)**
+
+A zero-inflated model was constructed to predict call counts using key predictor variables. The model included **X12m_call_history**, **tenure_at_snapshot** and **acq_method** in the count component. The zero-inflation component was modeled using **X12m_call_history** and **ann_prm_amt**. Two variations of the model were tested: one using the Poisson distribution and the other using the Negative Binomial distribution. The test RMSE for the Poisson-based model was 36.61514, while the Negative Binomial model achieved a slightly higher test RMSE of 36.85568. 
+
+
+The variables selected for the count and zero-inflation components of the zero-inflated model were chosen based on their anticipated relationships with call counts and the likelihood of observing zero calls. For the count component, **X12m_call_history**, **tenure_at_snapshot**, and **acq_method** were included due to their direct relevance to predicting call frequencies. **X12m_call_history** reflects historical call behavior, a strong predictor of future calls, while **tenure_at_snapshot** captures the policyholder's relationship duration, which may influence service utilization. **Acq_method** accounts for differences in call behavior based on how the policyholder was acquired. For the zero-inflation component, **X12m_call_history** and **ann_prm_amt** were selected to model the probability of zero calls. A lack of prior calls in **X12m_call_history** may indicate a higher likelihood of structural zeros, while **ann_prm_amt** (annual premium amount) reflects engagement or interaction levels, with extreme premium values potentially associated with zero calls. 
+
+
 
 ## Model Result
 
@@ -131,47 +144,14 @@ The Gradient Boosted Machine (GBM) attained the lowest RMSE of 36.1614, signifyi
 
 5.  How you are you handling multiple tuning parameters that you obtain in each fold of CV?
 
-## Model Selection
-
-**Gradient Boosting Machine (GBM)**
-
--   Test RMSE: 36.1614
-
--   Best Performing Model
-
--   **Parameter Tuning**: Trial and Error
-
--   **Challenge**: Dataset was too large for hyperparameter tuning
-
-## Variable Selection
-
-**Gradient Boosting Machine (GBM)** 
-
-![Variable Importance Plot](VariableImportance.png){width="50%"}
-
-An initial GBM was run with all the variables, and then a subset of 3 variables was selected from the variable importance plot, and another gbm model was run with those three variables.
-
-## Variable Selection
-
--   Most Important Variables: X12m_call_history, tenure_at_snapshot, and acq_method
--   Test RMSE for Model with all variables: 36.1742
--   Test RMSE for Model with 3 variables selected from Variable Importance Plot: 36.1614
--   Limitation: Variable importance does not specify the relationship between the predictors and call_counts
-
-## Model Evaluation
-
-![Train and Test RMSE Curves](Test_Train.png){width="50%"}
-
--   Train RMSE: 35.67179
--   Test RMSE: 36.1742
 
 ## Concerns
 
-The model is likely sub-optimal, as it struggled to achieve a good accuracy score (about 25% on the validation set) and the parameters were tuned through trial and error instead of using a grid search to find the optimal values.
+A key limitation was the restricted scope of the grid search for hyperparameter tuning; the grid was not broad enough to explore a wider range of parameters due to the computational constraints posed by the large dataset. Additionally, attempts to include more variables in the Zero-Inflated Poisson (ZIP) and Zero-Inflated Negative Binomial (ZINB) models resulted in convergence failures, again due to limited computing power. 
 
 ## Recommendations
 
-With better computing power, implementing a grid search would be feasible and could significantly enhance the model's predictive capability.
+With better computing power, implementing a wider grid search would be feasible and could significantly enhance the model's predictive capability.
 
 The MissForest method [@stekhoven2012missforest] uses Random Forests for non-parametric imputation. Gradient Boosting Machines (GBM) have also been widely explored for predictive modeling [@friedman2001greedy]. Stacking, a form of ensemble learning, is discussed in Boehmke's work [@bradley2021stacking].
 
