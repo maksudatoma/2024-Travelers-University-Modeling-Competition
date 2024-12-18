@@ -55,7 +55,7 @@ For additional information and code implementation, please check- <https://githu
 
 Minimizing call center expenses while preserving customer happiness is a significant challenge for CloverShield Insurance. A predictive model has been created to estimate the call volume (call_counts) a policyholder is expected to produce. Comprehending these patterns will facilitate enhanced resource allocation, augment operational efficiency, and diminish superfluous expenditures in call center operations.
 
-The target variable, call_counts, denotes the quantity of calls made by a policyholder, whereas the independent variables are a combination of demographic, policy, and behavioral attributes. Principal predictors encompass X12m_call_history (previous year’s call history), ann_prm_amt (annualized premium amount), newest_veh_age (age of the most recent insured vehicle), geo_group (policyholder's residential region), and digital_contacts_ind (digital communication indicator), among others.
+The target variable, call_counts, denotes the quantity of calls made by a policyholder, whereas the independent variables are a combination of demographic, policy, and behavioral attributes. Principal predictors encompass X12m_call_history (previous year's call history), ann_prm_amt (annualized premium amount), newest_veh_age (age of the most recent insured vehicle), geo_group (policyholder's residential region), and digital_contacts_ind (digital communication indicator), among others.
 
 The target variable has distinct attributes: it is zero-inflated, skewed, and count-based, presenting difficulties for conventional predictive models. Moreover, absent values exist in crucial predictors including newest_veh_age, telematics_ind, and acq_method. Consequently, meticulous data preprocessing, encompassing imputation and modification, was performed to guarantee data quality and reliability.
 
@@ -63,19 +63,19 @@ To ascertain the most precise and effective model, many methodologies were emplo
 
 ## 2. Methodology
 
-2.1 Imputation
+**2.1 Imputation**
 
 Missing values in the dataset were handled using the Multivariate Imputation by Chained Equations (MICE) package in R. MICE generates plausible synthetic values for incomplete columns by leveraging relationships with other variables through a Markov Chain Monte Carlo (MCMC) process, specifically utilizing Gibbs sampling. This iterative technique ensures missing values are updated based on the observed data's conditional distributions.
 
 In this dataset, four variables contained missing values: acq_method (20%), newest_veh_age (72%), pol_edeliv_ind (1%), and telematics_ind (72%). Appropriate imputation methods were applied depending on the variable type:
 
-- acq_method: A nominal variable with multiple categories; missing values were imputed using polytomous logistic regression (polyreg), suitable for unordered categorical variables with more than two levels.
+-   acq_method: A nominal variable with multiple categories; missing values were imputed using polytomous logistic regression (polyreg), suitable for unordered categorical variables with more than two levels.
 
-- newest_veh_age: A numeric variable; imputed using Predictive Mean Matching (pmm), which preserves realistic values by selecting observed data close to the predicted mean.
+-   newest_veh_age: A numeric variable; imputed using Predictive Mean Matching (pmm), which preserves realistic values by selecting observed data close to the predicted mean.
 
-- pol_edeliv_ind and telematics_ind: Binary variables; missing values were imputed using logistic regression (logreg), ideal for variables with two outcomes.
+-   pol_edeliv_ind and telematics_ind: Binary variables; missing values were imputed using logistic regression (logreg), ideal for variables with two outcomes.
 
-2.2 Zero Values
+**2.2 Zero Values**
 
 The target variable, call_counts, contains a significant proportion (50.18%) of zero values, indicating that many policyholders did not make any calls. This pattern highlights the need for specialized models such as Zero-Inflated Poisson (ZIP), which can effectively address zero-inflated and skewed count data.
 
@@ -88,13 +88,14 @@ The correlation matrix highlights that call_counts is the target variable, with 
 ![*Heat Map*](000012.png){width="50%"}
 
 **2.4 ANOVA Table**
+
 Now we will see what's going on with the categorical variable through the ANOVA table.
 
 The ANOVA results evaluate the effect of categorical variables on call_counts. Among the predictors, acq_method is marginally significant (p=0.0518), suggesting it may have a weak influence on call_counts. All other categorical variables, such as bi_limit_group, channel, and geo_group, have p-values greater than 0.1, indicating no statistically significant relationship with the target variable. Additionally, 16,066 rows were excluded due to missing data, which might affect the robustness of the results. It is recommended to focus on acq_method for further analysis and consider handling missing data to improve model accuracy.
 
 ![*ANOVA result*](anova_results.jpg){width="50%"}
 
-The violin plot shows the distribution of call_counts across different acquisition methods (acq_method). All methods have a heavily skewed distribution, with most values near 0 and a few extreme outliers, indicating that the majority of customers make few calls. The distributions are nearly identical across all methods, including the NA category, suggesting that acq_method has minimal impact on call_counts. This aligns with the ANOVA results, where acq_method was marginally significant. Further analysis, such as handling outliers or exploring interactions with other variables, may provide additional insights.
+Since we find out from the ANOVA that acq_method is marginally significant, we're interested to see what's going on with this method. The violin plot shows the distribution of call_counts across different acquisition methods (acq_method). All methods have a heavily skewed distribution, with most values near 0 and a few extreme outliers, indicating that the majority of customers make few calls. The distributions are nearly identical across all methods, including the NA category, suggesting that acq_method has minimal impact on call_counts. This aligns with the ANOVA results, where acq_method was marginally significant. Further analysis, such as handling outliers or exploring interactions with other variables, may provide additional insights.
 
 ![*Violin Plot*](17.png){width="50%"}
 
@@ -118,42 +119,38 @@ Variables such as pay_type_code (0.11) and digital_contact_ind (0.04) showed min
 
 **3.1.1 Gradient Boosted Machines (GBM) and Random Forests**
 
-Gradient Boosted Machines (GBMs) and Random Forests were trained using the top 3 to top 10 variables identified from the variable importance plot, applied to another one-third of the dataset. Among these models, the GBM and Random Forest trained with only the top three variables—**12m_call_history**, **tenure_at_snapshot**, and **acq_method**—achieved the lowest test RMSE values. Specifically, the GBM recorded an RMSE of 36.1614, while the Random Forest yielded an RMSE of 36.30212. 
+The MissForest method [@stekhoven2012missforest] uses Random Forests for non-parametric imputation. Gradient Boosting Machines (GBM) have also been widely explored for predictive modeling [@friedman2001greedy]. Stacking, a form of ensemble learning, is discussed in Boehmke's work [@bradley2021stacking].
+
+Gradient Boosted Machines (GBMs) and Random Forests were trained using the top 3 to top 10 variables identified from the variable importance plot, applied to another one-third of the dataset. Among these models, the GBM and Random Forest trained with only the top three variables---**12m_call_history**, **tenure_at_snapshot**, and **acq_method**---achieved the lowest test RMSE values. Specifically, the GBM recorded an RMSE of 36.1614, while the Random Forest yielded an RMSE of 36.30212.
 
 For the GBM, the best-performing model was identified through cross-validation and used the parameters: `n.trees` = 1200, `shrinkage` = 0.02, `interaction.depth` = 2, and `n.minobsinnode` = 20. Similarly, the optimal Random Forest model, also selected using cross-validation, was configured with `n.trees` = 50 and `nodesize` = 20.
 
-
-
 **3.1.1 Zero-Inflated Poisson (ZIP) and Zero-Inflated Negative Binomial (ZINB)**
 
-A zero-inflated model was constructed to predict call counts using key predictor variables. The model included **X12m_call_history**, **tenure_at_snapshot** and **acq_method** in the count component. The zero-inflation component was modeled using **X12m_call_history** and **ann_prm_amt**. Two variations of the model were tested: one using the Poisson distribution and the other using the Negative Binomial distribution. The test RMSE for the Poisson-based model was 36.61514, while the Negative Binomial model achieved a slightly higher test RMSE of 36.85568. 
+A zero-inflated model was constructed to predict call counts using key predictor variables. The model included **X12m_call_history**, **tenure_at_snapshot** and **acq_method** in the count component. The zero-inflation component was modeled using **X12m_call_history** and **ann_prm_amt**. Two variations of the model were tested: one using the Poisson distribution and the other using the Negative Binomial distribution. The test RMSE for the Poisson-based model was 36.61514, while the Negative Binomial model achieved a slightly higher test RMSE of 36.85568.
 
-
-The variables selected for the count and zero-inflation components of the zero-inflated model were chosen based on their anticipated relationships with call counts and the likelihood of observing zero calls. For the count component, **X12m_call_history**, **tenure_at_snapshot**, and **acq_method** were included due to their direct relevance to predicting call frequencies. **X12m_call_history** reflects historical call behavior, a strong predictor of future calls, while **tenure_at_snapshot** captures the policyholder's relationship duration, which may influence service utilization. **Acq_method** accounts for differences in call behavior based on how the policyholder was acquired. For the zero-inflation component, **X12m_call_history** and **ann_prm_amt** were selected to model the probability of zero calls. A lack of prior calls in **X12m_call_history** may indicate a higher likelihood of structural zeros, while **ann_prm_amt** (annual premium amount) reflects engagement or interaction levels, with extreme premium values potentially associated with zero calls. 
-
-
+The variables selected for the count and zero-inflation components of the zero-inflated model were chosen based on their anticipated relationships with call counts and the likelihood of observing zero calls. For the count component, **X12m_call_history**, **tenure_at_snapshot**, and **acq_method** were included due to their direct relevance to predicting call frequencies. **X12m_call_history** reflects historical call behavior, a strong predictor of future calls, while **tenure_at_snapshot** captures the policyholder's relationship duration, which may influence service utilization. **Acq_method** accounts for differences in call behavior based on how the policyholder was acquired. For the zero-inflation component, **X12m_call_history** and **ann_prm_amt** were selected to model the probability of zero calls. A lack of prior calls in **X12m_call_history** may indicate a higher likelihood of structural zeros, while **ann_prm_amt** (annual premium amount) reflects engagement or interaction levels, with extreme premium values potentially associated with zero calls.
 
 ## Model Result
 
 The Gradient Boosted Machine (GBM) attained the lowest RMSE of 36.1614, signifying superior predictive accuracy compared to other evaluated models, with Random Forest closely trailing at an RMSE of 36.30212. The Zero-Inflated Poisson (ZIP) and Zero-Inflated Negative Binomial (ZINB) models exhibited elevated RMSE values, signifying diminished accuracy. The Hurdle and Two-Part Models were contemplated but remain untested, allowing for future assessment. Gradient Boosting Machine (GBM) and Random Forest have the highest performance according to Root Mean Square Error (RMSE). Additional evaluation of the Hurdle and Two-Part Models may yield chances for enhancing forecasts. 
-![*Model Comparison*](model_results.jpg){width="50%"}
+![Model Comparison](model_results.jpg){width="50%"}
 
-**I HAVE STOPPED HERE. CAN YOU WRITE NEXT PROCEDURE IN DETAILS?** **NEED TO FOCUS ON THESE** 3. In the Method section describe the technical details of the steps you had taken. techincal description of imputation. If you are using GLM, what are the models for Bernoulli section and the Count section. If you are using RF, what is the node cost function, stopping rule, etc.
+**I HAVE STOPPED HERE. CAN YOU WRITE NEXT PROCEDURE IN DETAILS?** **NEED TO FOCUS ON THESE**
+3. In the Method section describe the technical details of the steps you had taken. techincal description of imputation. If you are using GLM, what are the models for Bernoulli section and the Count section. If you are using RF, what is the node cost function, stopping rule, etc.
 
 4.  In the result section offer all model comparison result. Describe if you were doing a full cross-validation or a single hold out test. if you are using single hold out, why is that appropriate?
 
 5.  How you are you handling multiple tuning parameters that you obtain in each fold of CV?
 
-
 ## Concerns
 
-A key limitation was the restricted scope of the grid search for hyperparameter tuning; the grid was not broad enough to explore a wider range of parameters due to the computational constraints posed by the large dataset. Additionally, attempts to include more variables in the Zero-Inflated Poisson (ZIP) and Zero-Inflated Negative Binomial (ZINB) models resulted in convergence failures, again due to limited computing power. 
+A key limitation was the restricted scope of the grid search for hyperparameter tuning; the grid was not broad enough to explore a wider range of parameters due to the computational constraints posed by the large dataset. Additionally, attempts to include more variables in the Zero-Inflated Poisson (ZIP) and Zero-Inflated Negative Binomial (ZINB) models resulted in convergence failures, again due to limited computing power.
 
 ## Recommendations
 
 With better computing power, implementing a wider grid search would be feasible and could significantly enhance the model's predictive capability.
 
-The MissForest method [@stekhoven2012missforest] uses Random Forests for non-parametric imputation. Gradient Boosting Machines (GBM) have also been widely explored for predictive modeling [@friedman2001greedy]. Stacking, a form of ensemble learning, is discussed in Boehmke's work [@bradley2021stacking].
 
 # References
 
